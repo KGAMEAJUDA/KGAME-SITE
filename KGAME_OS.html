@@ -1,0 +1,4269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KgameOS</title>
+  <style>
+    :root{
+      --kg-red:#ed0a22;
+      --taskbar-h:48px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;user-select:none;}
+    html,body{width:100%;height:100%;overflow:hidden;font-family:Segoe UI, Arial, sans-serif;background:#000;}
+
+#desktop{
+  position:relative;
+  width:100%;
+  height:100%;
+  background: url('kgameosbg169.png') center center / cover no-repeat, #000;
+}
+
+/* =========================
+   16:10 (ex: 1680x1050)
+   ========================= */
+@media (min-aspect-ratio: 8/5) and (max-aspect-ratio: 17/10){
+  #desktop{
+    background-image: url('kgameosbg1610.png');
+  }
+}
+
+/* =========================
+   4:3 e similares
+   ========================= */
+@media (max-aspect-ratio: 5/4){
+  #desktop{
+    background-image: url('kgameosbg43.png');
+  }
+}
+#task-clock{
+  margin-left:auto;
+  padding:0 12px;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-end;
+
+  font-size:12px;
+  line-height:1.1;
+  letter-spacing:1px;
+
+  color:white;
+  opacity:.9;
+
+  text-shadow:0 2px 6px rgba(0,0,0,.8);
+}
+
+.clock-btn{
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:8px;
+  transition:.15s;
+}
+
+.clock-btn:hover{
+  background:rgba(255,255,255,.08);
+}
+
+/* calendário */
+
+#task-calendar{
+  position:absolute;
+  right:10px;
+  bottom:calc(var(--taskbar-h) + 10px);
+
+  width:260px;
+  padding:12px;
+
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,.18), transparent 45%),
+    linear-gradient(180deg, rgba(120,0,0,.9), rgba(20,0,0,.95));
+
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.18);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.25),
+    0 20px 50px rgba(0,0,0,.8);
+
+  color:white;
+  font-size:13px;
+
+  display:none;
+  z-index:40000;
+}
+
+#task-calendar.open{
+  display:block;
+}
+
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  margin-top:10px;
+  text-align:center;
+}
+
+.calendar-day{
+  opacity:.6;
+  font-size:11px;
+}
+
+.calendar-cell{
+  padding:6px 0;
+  border-radius:6px;
+}
+
+.calendar-today{
+  background:#ed0a22;
+  box-shadow:0 0 10px rgba(237,10,34,.7);
+}
+
+    /* Taskbar */
+    #taskbar{
+      position:absolute;
+      left:0;
+      bottom:0;
+      width:100%;
+      height:var(--taskbar-h);
+      display:flex;
+      align-items:center;
+      padding:0 8px;
+      z-index:10000;
+      background: linear-gradient(180deg, #6b0000, #120000);
+      border-top:1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.7);
+    }
+
+    #start-button{
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      cursor:pointer;
+      background: url('rodopio leve.gif') center center / cover no-repeat;
+      box-shadow: inset 0 0 6px rgba(255,255,255,0.6), 0 0 8px rgba(0,0,0,0.6);
+    }
+
+    #task-items{display:flex;gap:6px;margin-left:10px;}
+    .task-item{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      background: linear-gradient(180deg,#aa0000,#440000);
+      color:#fff;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .task-item.active{
+      box-shadow:0 0 14px rgba(237,10,34,.35);
+      border-color: rgba(237,10,34,.45);
+      background: linear-gradient(180deg,#c40000,#4a0000);
+    }
+    .task-item-icon{
+      width:18px;height:18px;border-radius:4px;
+      background: radial-gradient(circle at top left,#ff7777,#5a0000);
+      display:flex;align-items:center;justify-content:center;
+      font-size:11px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+    }
+
+    /* Desktop icon */
+    #arkadeIcon{
+      position:absolute;top:20px;left:20px;cursor:pointer;
+      width:76px;
+      text-align:center;
+    }
+    #arkadeIcon .ico{
+      width:48px;height:48px;border-radius:10px;
+      margin:0 auto;
+      background:linear-gradient(180deg,#ff4444,#5a0000);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 10px 18px rgba(0,0,0,.55);
+      font-size:24px;
+    }
+    #arkadeIcon .lbl{margin-top:6px;font-size:12px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.85)}
+
+    /* Windows */
+    .window{
+      position:absolute;
+      background:#111;
+      border-radius:10px;
+      overflow:hidden;
+      box-shadow:0 18px 40px rgba(0,0,0,0.65);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .window-header{
+      height:36px;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.18), transparent 40%),
+        linear-gradient(180deg, #5a0000, #140000);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 10px;
+      cursor:move;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+    }
+
+    .window-title{
+      color:#fff;font-size:13px;opacity:.95;
+      display:flex;align-items:center;gap:8px;
+      text-shadow:0 2px 6px rgba(0,0,0,.8);
+    }
+    .window-title .win-icon{
+      width:18px;height:18px;border-radius:5px;
+      background:radial-gradient(circle at top left,#ff7777,#5a0000);
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 2px 6px rgba(0,0,0,.6);
+    }
+
+    .window{
+      position:absolute;
+      background:#111;
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 18px 40px rgba(0,0,0,0.65), 0 0 22px rgba(237,10,34,.25);
+      border:1px solid rgba(255,255,255,.14);
+    }
+
+    .window-title{color:#fff;font-size:13px;opacity:.95;}
+    .window-controls{display:flex;gap:8px; padding-right:2px;}
+
+    .window-btn{
+      width:18px;height:18px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      background: radial-gradient(circle at top left,#ffb3b3,#b00000 55%,#5a0000);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.55),
+        inset 0 -1px 0 rgba(0,0,0,.6),
+        0 2px 6px rgba(0,0,0,.6);
+      transition: transform .12s ease, filter .15s ease, box-shadow .15s ease;
+      position:relative;
+    }
+    .window-btn.min{background:radial-gradient(circle at top left,#ffd9a3,#ff9f00 55%,#8a3b00)}
+    .window-btn.max{background:radial-gradient(circle at top left,#c6ffcf,#18b94a 55%,#045a22)}
+    .window-btn.close{background:radial-gradient(circle at top left,#ffb3b3,#ff2a2a 55%,#6b0000)}
+
+    .window-btn:hover{transform:scale(1.15)}
+    .window-btn.min:hover{box-shadow:0 0 10px rgba(255,180,60,.7), inset 0 1px 0 rgba(255,255,255,.7)}
+    .window-btn.max:hover{box-shadow:0 0 10px rgba(80,255,150,.7), inset 0 1px 0 rgba(255,255,255,.7)}
+    .window-btn.close:hover{box-shadow:0 0 12px rgba(255,60,60,.8), inset 0 1px 0 rgba(255,255,255,.7)}
+    .window-btn:active{transform:scale(.9); filter:brightness(.9)}
+
+    /* min: dash */
+    .window-btn.min::after{
+      content:'';
+      width:10px;height:2px;
+      background:#200;
+      border-radius:2px;
+    }
+    /* max: centered square */
+    .window-btn.max::after{
+      content:'';
+      width:8px;height:8px;
+      border:2px solid #200;
+      border-radius:2px;
+      position:absolute;
+      inset:0;
+      margin:auto;
+    }
+    /* close: X */
+    .window-btn.close::before,
+    .window-btn.close::after{
+      content:'';
+      position:absolute;
+      width:10px;height:2px;
+      background:#200;
+      border-radius:2px;
+    }
+    .window-btn.close::before{transform:rotate(45deg)}
+    .window-btn.close::after{transform:rotate(-45deg)}
+
+   .window-content{
+  width:100%;
+  height:calc(100% - 32px);
+
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.02)),
+    radial-gradient(circle at top right, rgba(255,255,255,.25), transparent 55%),
+    linear-gradient(180deg, rgba(120,0,0,.85), rgba(20,0,0,.92));
+
+  color:#fff;
+  padding:16px;
+  position:relative;
+  overflow:hidden;
+}
+
+
+    .window-content.playing{display:flex;align-items:center;justify-content:center;padding:0;}
+
+    /* fullscreen: remove inner padding so game can use tudo */
+    .window.maximized .window-content{
+      padding:0;
+    }
+
+    .window.minimized{display:none}
+    .window.maximized{
+      left:0!important;
+      top:0!important;
+      width:100%!important;
+      height:calc(100% - var(--taskbar-h))!important;
+      border-radius:0;
+    }
+
+    /* Start Menu (Win7/Frutiger-ish) */
+    #start-menu{
+      opacity:0;
+      transform: translateY(20px) scale(.98);
+      pointer-events:none;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index:30000;
+      position:absolute;
+      bottom:var(--taskbar-h);
+      left:8px;
+      width:380px;
+      height:440px;
+      display:none;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.18), transparent 45%),
+        linear-gradient(180deg, rgba(120,0,0,.85), rgba(20,0,0,.92));
+      backdrop-filter: blur(10px) saturate(140%);
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.18);
+      overflow:hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.35),
+        inset 0 -1px 0 rgba(0,0,0,.6),
+        0 0 25px rgba(237,10,34,.35),
+        0 30px 70px rgba(0,0,0,.85);
+      animation:startGlow 3.5s ease-in-out infinite alternate;
+    }
+    #start-menu.open{opacity:1;transform: translateY(0) scale(1);pointer-events:auto;}
+
+    @keyframes startGlow{
+      from{ box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(0,0,0,.6), 0 0 18px rgba(237,10,34,.25), 0 30px 70px rgba(0,0,0,.85); }
+      to{ box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(0,0,0,.6), 0 0 38px rgba(237,10,34,.55), 0 30px 70px rgba(0,0,0,.85); }
+    }
+
+    .start-inner{display:grid;grid-template-columns:1fr 2fr;height:100%;}
+ .start-left{
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
+}
+.start-left-bottom{
+  margin-top:auto;
+  display:flex;
+  flex-direction:row;
+  justify-content:center;
+  gap:10px;
+}
+.start-left-bottom .start-item{
+  width:42px;
+  height:42px;
+  padding:0;
+  border-radius:8px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:20px;   /* tamanho do emoji */
+}
+
+/* remove qualquer texto caso exista */
+.start-left-bottom .start-item span{
+  display:none;
+}
+
+
+.start-right{
+  padding:14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.02)),
+    radial-gradient(circle at top right, rgba(255,255,255,.25), transparent 55%);
+}
+
+    .start-user{
+ padding:18px 12px;
+  justify-content:center;
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  /* espaço abaixo do avatar */
+  margin-bottom:20px;
+}
+
+
+.start-avatar{
+  width:72px;
+  height:72px;
+  border-radius:12px;
+
+  background:#3a3a3a;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  box-shadow:
+    inset 0 -2px 4px rgba(0,0,0,.35),
+    0 6px 14px rgba(0,0,0,.6);
+}
+
+.avatar-svg{
+  width:80%;
+  height:80%;
+  fill:#ed0a22;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.4));
+}
+
+
+
+
+   .start-item{
+ margin-bottom:10px; /* espaço entre os botões */
+    display:flex;
+    align-items:center;
+    gap:10px;
+  white-space:nowrap;
+
+    padding:10px 12px;
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-size:15px;
+    color:#fff;
+
+    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 4px 10px rgba(0,0,0,.4);
+
+    transition:.2s ease;
+}
+
+.start-item:hover{
+    background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.05));
+    transform:translateX(2px);
+}
+
+.start-item::first-letter{
+    font-size:18px;
+}
+
+    .start-power{
+      margin-top:auto;padding:10px;text-align:center;border-radius:12px;
+      background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.35));
+      cursor:pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    .start-power:hover{background:linear-gradient(180deg, rgba(255,255,255,.25), rgba(237,10,34,.35));box-shadow:0 0 14px rgba(237,10,34,.45);}
+
+    /* Arkade tiles */
+    .arkade-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(160px, 1fr));
+      gap:18px;
+      align-content:start;
+    }
+    .game-tile{
+      height:120px;
+      border-radius:14px;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.18), transparent 55%), linear-gradient(180deg, rgba(20,20,20,0.92), rgba(8,8,8,0.92));
+      border:1px solid rgba(255,255,255,0.16);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35), 0 10px 24px rgba(0,0,0,0.65), 0 0 6px rgba(237,10,34,0.18);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      cursor:pointer;
+      transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+      animation: tileGlow 4s ease-in-out infinite alternate;
+    }
+    @keyframes tileGlow{
+      from{ box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35), 0 10px 24px rgba(0,0,0,0.65), 0 0 6px rgba(237,10,34,0.15); }
+      to{ box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35), 0 12px 28px rgba(0,0,0,0.75), 0 0 18px rgba(237,10,34,0.35); }
+    }
+    .game-tile:hover{
+      transform: translateY(-3px);
+      border-color: rgba(237,10,34,0.55);
+      box-shadow: inset 0 0 0 1px rgba(237,10,34,0.25), 0 16px 34px rgba(0,0,0,0.8);
+    }
+    .game-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--kg-red);filter: drop-shadow(0 6px 10px rgba(0,0,0,0.65));}
+    .game-icon svg{width:44px;height:44px;display:block;}
+    .game-title{font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.92)}
+
+    /* Game menu overlay (layout like your screenshots) */
+    .game-screen{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;}
+    .game-screen-inner{width:min(520px, 92%);display:flex;flex-direction:column;align-items:center;gap:16px;}
+    .game-hero-title{font-size:48px;font-weight:900;font-style:italic;letter-spacing:3px;color:var(--kg-red);line-height:1;}
+    .game-hero-sub{margin-top:-6px;font-size:11px;letter-spacing:6px;text-transform:uppercase;color:#7a8a9a;}
+    .game-pill{margin-top:10px;padding:16px 56px;border-radius:999px;background:var(--kg-red);border:none;color:#fff;font-weight:900;letter-spacing:3px;cursor:pointer;box-shadow:0 0 25px rgba(237,10,34,.4);}    
+    .game-controls-hint{
+  font-family: Consolas, monospace;
+  font-size:12px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+
+  opacity:.95;
+  margin-top:10px;
+  padding:10px 28px;
+  border-radius:18px;
+
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,.12), transparent 45%),
+    linear-gradient(180deg,#101010,#030303);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.25),
+    0 0 18px rgba(237,10,34,.25),
+    0 8px 20px rgba(0,0,0,.7);
+
+  color:#e6e6e6;
+}
+
+    .game-back{margin-top:10px;background:none;border:1px solid #333;color:#aaa;padding:8px 18px;border-radius:18px;cursor:pointer}
+    .game-over{display:none;flex-direction:column;gap:12px;margin-top:20px;align-items:center}
+    .game-over-title{font-weight:900;letter-spacing:3px}
+
+    /* Arcade stage (centra e escala corretamente em janela e tela cheia) */
+    #game-stage{display:none;}
+    .arcade-wrap{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:0px;}
+
+    .arcade-frame{
+      position:relative;
+      width:100%;
+      height:auto;
+      max-height:100%;
+
+      aspect-ratio: 16 / 10;
+      border-radius:0px;
+      background: radial-gradient(circle at top left, rgba(255,255,255,.12), transparent 55%), linear-gradient(180deg,#0b0b0b,#020202);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 18px 50px rgba(0,0,0,.75);
+      overflow:hidden;
+    }
+
+    /* “zoom” no fullscreen: usa mais área */
+    .window.maximized .arcade-wrap{padding:18px;}
+    .window.maximized .arcade-frame{
+      transform: scale(1.03);
+      transform-origin:center;
+    }
+
+    /* Arkade menu: dá respiro no topo em tela cheia */
+   .window.maximized #arkade-menu{
+  margin-top:22px;
+}
+
+/* ===== CRT SHUTDOWN ===== */
+
+#crt-off{
+  position:fixed;
+  inset:0;
+  background:#000;
+  pointer-events:none;
+  opacity:0;
+  z-index:999999;
+  transition:opacity .4s ease;
+}
+
+#crt-off.active{
+  opacity:1;
+}
+
+#crt-off::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.04) 0px,
+      rgba(255,255,255,.04) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+  mix-blend-mode:overlay;
+}
+
+#crt-line{
+  position:absolute;
+  left:0;
+  top:50%;
+  width:100%;
+  height:2px;
+  background:white;
+  opacity:0;
+}
+/* aviso F11 */
+
+#f11-hint{
+  position:fixed;
+  left:50%;
+  top:37%;
+  transform:translate(-50%,-50%) scale(.95);
+  padding:14px 22px;
+  border-radius:12px;
+
+  background:rgba(0,0,0,.75);
+  color:#fff;
+  font-size:14px;
+  letter-spacing:.3px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.15),
+    0 12px 30px rgba(0,0,0,.6);
+
+  opacity:0;
+  pointer-events:none;
+  z-index:999999;
+
+  transition:opacity .35s ease, transform .35s ease;
+}
+
+#f11-hint.show{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1);
+}
+
+/* ===== LOCK SCREEN ===== */
+
+#lock-screen{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  backdrop-filter: blur(6px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .4s ease;
+  z-index:99998;
+}
+
+#lock-screen.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.lock-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  color:white;
+  font-size:14px;
+  letter-spacing:.3px;
+}
+
+.lock-avatar{
+ width:72px;
+  height:72px;
+  border-radius:12px;
+
+  background:#3a3a3a;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  box-shadow:
+    inset 0 -2px 4px rgba(0,0,0,.35),
+    0 6px 14px rgba(0,0,0,.6);
+
+}
+
+.lock-text{
+  font-size:15px;
+  opacity:.9;
+}
+
+.lock-sub{
+  font-size:12px;
+  opacity:.6;
+}
+/* =========================
+   GAME WINDOWS CLEAN MODE
+   ========================= */
+
+/* remove só a linha do header */
+.game-window .window-header{
+  border-bottom:none !important;
+}
+
+/* comportamento NORMAL (menu Arkade) */
+.game-window .window-content{
+  padding:16px;
+}
+
+/* somente quando está jogando */
+.game-window .window-content.playing{
+  padding:0 !important;
+}
+
+/* só durante gameplay cola tudo */
+.game-window .window-content.playing .arcade-wrap{
+  inset:0;
+  padding:0;
+}
+
+/* remove sombras intermediárias só no jogo */
+.game-window .window-content.playing .arcade-frame{
+  box-shadow:none !important;
+}
+
+/* canvas colado */
+.game-window .window-content.playing canvas{
+  display:block;
+}
+</style>
+
+</head>
+<body>
+
+<div id="f11-hint">
+  Aperte <b>F11</b> para deixar a tela cheia e ter uma experiência mais legal
+</div>
+
+<div id="crt-off">
+  <div id="crt-line"></div>
+</div>
+
+<!-- AQUI entra o LOCK SCREEN -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-avatar">
+ <svg viewBox="0 0 64 64" class="avatar-svg">
+  <circle cx="32" cy="21" r="16"/>
+  <path d="M6 58c0-16 52-16 52 0"/>
+</svg>
+
+</div>
+
+    <div class="lock-text">Sessão bloqueada</div>
+    <div class="lock-sub">Clique para desbloquear</div>
+  </div>
+</div>
+
+<div id="desktop">
+
+    <div id="arkadeIcon" title="Jogos">
+      <div class="ico">🕹️</div>
+      <div class="lbl">Jogos</div>
+    </div>
+
+    <!-- Start Menu -->
+    <div id="start-menu">
+      <div class="start-inner">
+        <div class="start-left">
+          <div class="start-user">
+         <div class="start-avatar">
+  <svg viewBox="0 0 64 64" class="avatar-svg">
+  <circle cx="32" cy="21" r="16"/>
+  <path d="M6 58c0-16 52-16 52 0"/>
+</svg>
+
+</div>
+
+
+          </div>
+<div class="start-item" id="start-arkade"> Jogos</div>
+            <div class="start-item"> Configurações</div>
+    <div class="start-item"> Ajuda</div>
+    <div class="start-item" id="start-about"> Sobre</div>
+
+
+<div class="start-left-bottom">
+  <div class="start-item start-shutdown">⏻</div>
+  <div class="start-item start-lock">🔒</div>
+</div>
+</div>
+
+       <div class="start-right">
+
+    <div class="start-item">📁 Arquivos</div>
+<div class="start-item" id="start-notepad">📝 Bloco de notas</div>
+<div class="start-item" id="start-calc">🧮 Calculadora</div>
+<div class="start-item" id="start-paint">🎨 Paint</div>
+<div class="start-item" id="start-music">🎵 Música</div>
+
+
+
+</div>
+
+      </div>
+    </div>
+
+    <!-- Taskbar -->
+   <div id="taskbar">
+  <div id="start-button" title="Iniciar"></div>
+  <div id="task-items"></div>
+
+  <!-- relógio -->
+  <div id="task-clock" class="clock-btn"></div>
+
+</div>
+<!-- calendário -->
+<div id="task-calendar"></div>
+
+
+  </div>
+
+<script>
+  let zIndexCounter = 200;
+  let arkadeWindow = null; // garante 1 instância
+let calcWindow = null;
+
+  const windows = new Set();
+  const TASKBAR_H = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--taskbar-h')) || 46;
+
+function setGameTitle(name, icon='🕹️'){
+  if(!arkadeWindow) return;
+
+  // título SOMENTE da janela Jogos
+  const winTitle = arkadeWindow.querySelector('.window-title');
+  if(winTitle){
+    winTitle.innerHTML = `<div class="win-icon">${icon}</div><span>${name}</span>`;
+  }
+
+  // taskbar SOMENTE do item da janela Jogos
+  if(arkadeWindow._taskItem){
+    arkadeWindow._taskItem.innerHTML =
+      `<div class="task-item-icon">${icon}</div><span>${name}</span>`;
+  }
+}
+
+
+  // --------------------
+  // Util
+  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+  function bringToFront(win){
+    win.style.zIndex = ++zIndexCounter;
+    // marca ativo (estilo Windows): só o topo fica ativo
+    windows.forEach(w => setTaskActive(w, w === win));
+  }
+
+  // --------------------
+  // Global drag (evita N listeners por janela)
+  const dragState = { active:false, win:null, offsetX:0, offsetY:0 };
+
+  document.addEventListener('mousemove', (e)=>{
+    if(!dragState.active || !dragState.win) return;
+    const win = dragState.win;
+
+    let nx = e.clientX - dragState.offsetX;
+    let ny = e.clientY - dragState.offsetY;
+
+    const maxX = window.innerWidth - win.offsetWidth;
+    const maxY = (window.innerHeight - TASKBAR_H) - win.offsetHeight;
+
+    nx = clamp(nx, 0, Math.max(0, maxX));
+    ny = clamp(ny, 0, Math.max(0, maxY));
+
+    win.style.left = nx + 'px';
+    win.style.top = ny + 'px';
+  });
+
+  document.addEventListener('mouseup', ()=>{
+    dragState.active = false;
+    dragState.win = null;
+  });
+
+  // --------------------
+  // Window management
+ function openArkade(){
+  if(arkadeWindow){
+    arkadeWindow.classList.remove('minimized');
+    bringToFront(arkadeWindow);
+    return;
+  }
+
+  arkadeWindow = createWindow({
+    id: 'arkade',
+    title: 'Jogos',
+    w: 980,
+    h: 620,
+    icon: '🕹️',
+    build: buildArkadeContent
+  });
+
+  arkadeWindow.classList.add('game-window');
+
+  arkadeWindow._onClose = ()=>{
+    arkadeWindow = null;
+  };
+}
+
+
+  function createWindow({id, title, w, h, icon, build}){
+    const win = document.createElement('div');
+    win.className = 'window';
+    win.dataset.appId = id;
+    win.style.width = w + 'px';
+    win.style.height = h + 'px';
+    win.style.left = '120px';
+    win.style.top = '90px';
+
+    const header = document.createElement('div');
+    header.className = 'window-header';
+
+    const t = document.createElement('div');
+    t.className = 'window-title';
+    t.innerHTML = `<div class="win-icon">${icon || '🗔'}</div><span>${title}</span>`;
+
+    const ctrls = document.createElement('div');
+    ctrls.className = 'window-controls';
+
+    const btnMin = document.createElement('div');
+    btnMin.className = 'window-btn min';
+
+    const btnMax = document.createElement('div');
+    btnMax.className = 'window-btn max';
+
+    const btnClose = document.createElement('div');
+    btnClose.className = 'window-btn close';
+
+    ctrls.appendChild(btnMin);
+    ctrls.appendChild(btnMax);
+    ctrls.appendChild(btnClose);
+
+    header.appendChild(t);
+    header.appendChild(ctrls);
+
+    const content = document.createElement('div');
+    content.className = 'window-content';
+
+    win.appendChild(header);
+    win.appendChild(content);
+    document.getElementById('desktop').appendChild(win);
+
+    windows.add(win);
+
+    // focus
+    win.addEventListener('mousedown', ()=> bringToFront(win));
+
+    // drag
+    makeDraggable(win, header);
+
+    // controls
+    btnMin.onclick = (e)=>{ e.stopPropagation(); minimizeWindow(win); };
+    btnMax.onclick = (e)=>{ e.stopPropagation(); toggleMaximize(win); };
+    btnClose.onclick = (e)=>{ e.stopPropagation(); closeWindow(win); };
+
+    // build content
+    if(typeof build === 'function') build(content, win);
+
+    // taskbar
+    addTaskItem(win, title, icon);
+
+    // keep inside desktop
+    clampToWorkArea(win);
+    bringToFront(win);
+
+    return win;
+  }
+
+ function closeWindow(win){
+
+  if(typeof win._cleanup === 'function'){
+    try{ win._cleanup(); }catch(e){}
+  }
+
+  if(win._taskItem) win._taskItem.remove();
+
+  if(typeof win._onClose === 'function'){
+    win._onClose();
+  }
+
+  windows.delete(win);
+  win.remove();
+
+  // ativa próxima janela do topo
+  let top = null;
+  windows.forEach(w=>{
+    if(!top || (+w.style.zIndex || 0) > (+top.style.zIndex || 0)) top = w;
+  });
+
+  if(top) bringToFront(top);
+}
+
+
+  function minimizeWindow(win){
+    win.classList.add('minimized');
+    setTaskActive(win, false);
+  }
+
+  function toggleMaximize(win){
+    if(win.classList.contains('maximized')){
+      win.classList.remove('maximized');
+      if(win._restore){
+        win.style.left = win._restore.l;
+        win.style.top = win._restore.t;
+        win.style.width = win._restore.w;
+        win.style.height = win._restore.h;
+        win._restore = null;
+      }
+      clampToWorkArea(win);
+
+      if(typeof win._onLayoutChanged === 'function'){
+        requestAnimationFrame(()=> requestAnimationFrame(()=> win._onLayoutChanged('restore')));
+      }
+      return;
+    }
+
+    win._restore = { l: win.style.left, t: win.style.top, w: win.style.width, h: win.style.height };
+    win.classList.add('maximized');
+    bringToFront(win);
+
+    if(typeof win._onLayoutChanged === 'function'){
+      requestAnimationFrame(()=> requestAnimationFrame(()=> win._onLayoutChanged('maximize')));
+    }
+  }
+
+  function addTaskItem(win, title, icon){
+    const taskItems = document.getElementById('task-items');
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    item.innerHTML = `<div class="task-item-icon">${icon || '🗔'}</div><span>${title}</span>`;
+
+    item.onclick = ()=>{
+      const isMin = win.classList.contains('minimized');
+      const isActive = win._taskItem?.classList.contains('active');
+
+      if(isMin){
+        win.classList.remove('minimized');
+        bringToFront(win);
+        return;
+      }
+
+      // comportamento Windows: se não estiver ativo, ativa; se ativo, minimiza
+      if(!isActive){
+        bringToFront(win);
+      } else {
+        minimizeWindow(win);
+      }
+    };
+
+    win._taskItem = item;
+    taskItems.appendChild(item);
+  }
+
+  function setTaskActive(win, active){
+    if(!win._taskItem) return;
+    win._taskItem.classList.toggle('active', !!active);
+  }
+
+  function clampToWorkArea(win){
+    if(win.classList.contains('maximized')) return;
+    const maxX = window.innerWidth - win.offsetWidth;
+    const maxY = (window.innerHeight - TASKBAR_H) - win.offsetHeight;
+
+    let nx = parseInt(win.style.left || '0', 10);
+    let ny = parseInt(win.style.top || '0', 10);
+
+    if(isNaN(nx)) nx = 0;
+    if(isNaN(ny)) ny = 0;
+
+    nx = clamp(nx, 0, Math.max(0, maxX));
+    ny = clamp(ny, 0, Math.max(0, maxY));
+
+    win.style.left = nx + 'px';
+    win.style.top = ny + 'px';
+  }
+
+  function makeDraggable(win, header){
+    header.addEventListener('mousedown', (e)=>{
+      if(win.classList.contains('maximized')) return;
+      dragState.active = true;
+      dragState.win = win;
+      dragState.offsetX = e.clientX - win.offsetLeft;
+      dragState.offsetY = e.clientY - win.offsetTop;
+      bringToFront(win);
+      e.preventDefault();
+    });
+  }
+
+  window.addEventListener('resize', ()=>{
+    windows.forEach(w => clampToWorkArea(w));
+  });
+// --- Arkade content ---
+function buildArkadeContent(container, win){
+  // UI (mantém o visual/estrutura que você já tinha)
+  container.innerHTML =
+    '<div id="arkade-menu" class="arkade-grid"></div>' +
+
+    '<div id="game-screen" class="game-screen">' +
+      '<div class="game-screen-inner" id="game-hero">' +
+        '<div id="game-name" class="game-hero-title">GAME</div>' +
+        '<div id="game-subtitle" class="game-hero-sub"></div>' +
+        '<button id="startGameBtn" class="game-pill">JOGAR AGORA</button>' +
+        '<div id="game-controls" class="game-controls-hint"></div>' +
+        '<button id="backBtn" class="game-back">Voltar ao menu</button>' +
+      '</div>' +
+
+      '<div id="game-stage" style="display:none;">' +
+        '<div class="arcade-wrap">' +
+          '<div class="arcade-frame" id="arcade-frame">' +
+
+            '<div style="position:absolute; left:16px; top:14px; display:flex; gap:10px; align-items:center; z-index:3;">' +
+       '<div id="hud-score" style="font-size:12px; font-weight:900; letter-spacing:2px; color:#fff; opacity:.92;">SCORE: 0</div>' +
+              '<div style="width:1px; height:14px; background:rgba(255,255,255,.18)"></div>' +
+             '<div id="hud-high" style="font-size:12px; font-weight:900; letter-spacing:2px; color:#fff; opacity:.65;">RECORDE: 0</div>' +
+'<div id="pong-lives" style="margin-left:10px; display:none; gap:6px; align-items:center;">' +
+  '<span style="font-size:11px;letter-spacing:2px;opacity:.6">VIDAS</span>' +
+  '<div id="pong-lives-dots" style="display:flex; gap:6px;"></div>' +
+'</div>' +
+
+'<div id="hud-menu" style="margin-left:10px;padding:4px 10px;border-radius:10px;font-size:11px;letter-spacing:2px;cursor:pointer;background:linear-gradient(180deg,#111,#050505);box-shadow:inset 0 0 0 1px rgba(255,255,255,.15),0 0 10px rgba(237,10,34,.35);">MENU</div>' +
+'</div>' +
+
+
+            '<canvas id="game-canvas" style="position:absolute; inset:0; width:100%; height:100%; display:block;"></canvas>' +
+
+            '<div id="game-overlay" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; text-align:center; z-index:5; background:rgba(0,0,0,.78); backdrop-filter: blur(2px);">' +
+              '<div style="width:min(520px, 92%); display:flex; flex-direction:column; align-items:center; gap:14px;">' +
+                '<div id="overlay-title" style="font-size:44px; font-weight:900; font-style:italic; letter-spacing:3px; color:var(--kg-red);">GAME OVER</div>' +
+                '<div id="overlay-sub" style="font-size:11px; letter-spacing:6px; text-transform:uppercase; color:#7a8a9a;">TENTE NOVAMENTE</div>' +
+                '<button id="overlay-restart" class="game-pill" style="padding:14px 40px; letter-spacing:3px;">RESTART</button>' +
+                '<button id="overlay-back" class="game-back">Voltar ao menu</button>' +
+              '</div>' +
+            '</div>' +
+
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // refs
+  const menu = container.querySelector('#arkade-menu');
+  const screen = container.querySelector('#game-screen');
+  const hero = container.querySelector('#game-hero');
+  const gameName = container.querySelector('#game-name');
+  const subtitle = container.querySelector('#game-subtitle');
+  const controls = container.querySelector('#game-controls');
+  const startBtn = container.querySelector('#startGameBtn');
+  const backBtn = container.querySelector('#backBtn');
+
+  const stage = container.querySelector('#game-stage');
+  const frame = container.querySelector('#arcade-frame');
+  const canvas = container.querySelector('#game-canvas');
+  const ctx = canvas.getContext('2d');
+// fundo branco inicial
+ctx.fillStyle = "#fff";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const overlay = container.querySelector('#game-overlay');
+  const overlayTitle = container.querySelector('#overlay-title');
+  const overlaySub = container.querySelector('#overlay-sub');
+  const overlayRestart = container.querySelector('#overlay-restart');
+  const overlayBack = container.querySelector('#overlay-back');
+
+  const hudScore = container.querySelector('#hud-score');
+  const hudHigh = container.querySelector('#hud-high');
+const hudMenu = container.querySelector('#hud-menu');
+
+
+  // catálogo (6 tiles)
+  const gameMeta = {
+    snake:   { title:'SNAKE',   sub:'JOGO DA COBRINHA',            controls:'WASD/←→↑↓: mover cobrinha' },
+    tetris:  { title:'TETRIS',  sub:'AQUELE DOS BLOCOS CAINDO',    controls:'← →: mover | ↑: girar | ↓: acelerar | espaço: drop' },
+    '2048':  { title:'2048',    sub:'DESLIZE OS NÚMEROS',          controls:'←→↑↓: mover blocos' },
+    pong:    { title:'PONG',    sub:'JOGO FAVORITO DO SEU BISAVÔ', controls:'↑↓: mover a barra' },
+    dinossaurinho:{ title:'DINOSSAURINHO',sub:'CAIU A INTERNET',        controls:'espaço / ↑ : pular' },
+    mines:   { title:'CAMPO MINADO', sub:'NÃO SEI COMO JOGA ISSO', controls:'mouse esquerdo: clicar / mouse direito: marcar' }
+  };
+
+  const icons = {
+    snake:
+      '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M14 18c10-8 26-4 30 6 3 7-4 12-12 12-8 0-14 4-10 10 4 6 18 8 28 0" stroke="var(--kg-red)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>',
+    tetris:
+      '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="14" y="14" width="36" height="10" fill="var(--kg-red)"/>' +
+      '<rect x="27" y="24" width="10" height="26" fill="var(--kg-red)"/>' +
+      '</svg>',
+    '2048':
+      '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">' +
+      '<rect x="14" y="14" width="14" height="14" stroke="var(--kg-red)" stroke-width="4"/>' +
+      '<rect x="36" y="14" width="14" height="14" stroke="var(--kg-red)" stroke-width="4"/>' +
+      '<rect x="14" y="36" width="14" height="14" stroke="var(--kg-red)" stroke-width="4"/>' +
+      '<rect x="36" y="36" width="14" height="14" stroke="var(--kg-red)" stroke-width="4"/>' +
+      '</svg>',
+    pong:
+      '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="18" y="18" width="6" height="28" fill="var(--kg-red)"/>' +
+      '<rect x="40" y="22" width="6" height="20" fill="var(--kg-red)" opacity="0.9"/>' +
+      '<circle cx="32" cy="32" r="3" fill="var(--kg-red)" opacity="0.8"/>' +
+      '</svg>',
+    dinossaurinho:
+  '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">' +
+  '<rect x="18" y="34" width="22" height="14" rx="3" fill="var(--kg-red)"/>' +
+  '<rect x="36" y="26" width="10" height="10" rx="2" fill="var(--kg-red)"/>' +
+  '<rect x="24" y="48" width="6" height="6" fill="var(--kg-red)"/>' +
+  '<rect x="34" y="48" width="6" height="6" fill="var(--kg-red)"/>' +
+  '<circle cx="42" cy="30" r="1.5" fill="#000"/>' +
+  '</svg>',
+
+    mines:
+      '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">' +
+      '<circle cx="32" cy="36" r="12" fill="var(--kg-red)"/>' +
+      '<path d="M32 20c4-4 8-4 10-2" stroke="var(--kg-red)" stroke-width="4" stroke-linecap="round"/>' +
+      '<circle cx="44" cy="16" r="3" fill="var(--kg-red)"/>' +
+      '</svg>'
+  };
+
+  const order = ['snake','tetris','2048','pong','dinossaurinho','mines'];
+  menu.innerHTML = order.map(function(k){
+    return (
+      '<div class="game-tile" data-game="'+k+'">' +
+        '<div class="game-icon">'+(icons[k]||'')+'</div>' +
+        '<div class="game-title">'+gameMeta[k].title+'</div>' +
+      '</div>'
+    );
+  }).join('');
+
+  // util UI
+  function setHud(score, high, showHigh){
+    hudScore.textContent = 'SCORE: ' + (score|0);
+    hudHigh.textContent = showHigh ? ('RECORDE: ' + (high|0)) : '';
+  }
+  function showOverlay(t, s){
+    overlayTitle.textContent = t;
+    overlaySub.textContent = s;
+    overlay.style.display = 'flex';
+  }
+  function hideOverlay(){ overlay.style.display = 'none'; }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  // canvas resize (DPI ok)
+  const view = { w:0, h:0 };
+const HUD_H = 42;
+
+  function resizeCanvas(){
+    const r = frame.getBoundingClientRect();
+    const w = Math.max(320, Math.floor(r.width));
+    const h = Math.max(260, Math.floor(r.height));
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    view.w = w;
+view.h = h - HUD_H;
+canvas.style.top = HUD_H + 'px';
+canvas.style.height = 'calc(100% - ' + HUD_H + 'px)';
+
+
+  }
+
+  // ========= Modular games =========
+  let currentKey = null;
+  let currentGame = null;
+  const games = {};
+
+ function stopCurrent(){
+
+  stage.style.display = 'none';   // <<< ADICIONE ESTA LINHA
+
+  if(currentGame && currentGame.stop) currentGame.stop();
+  currentGame = null;
+}
+
+
+  // ---------------- SNAKE ----------------
+  (function(){
+    const s = {
+      active:false, running:false,
+      raf:0, last:0, tickMs:110,
+      cols:40, rows:24, cell:20,
+      offX:0, offY:0, playW:0, playH:0,
+      dir:{x:1,y:0}, next:{x:1,y:0},
+      body:[], food:{x:10,y:7},
+      score:0,
+      high: parseInt(localStorage.getItem('kg_high_snake')||'0',10) || 0
+    };
+
+    function spawnFood(){
+      const occ = new Set(s.body.map(p=>p.x+','+p.y));
+      for(let i=0;i<600;i++){
+        const x = Math.floor(Math.random()*s.cols);
+        const y = Math.floor(Math.random()*s.rows);
+        if(!occ.has(x+','+y)){ s.food={x,y}; return; }
+      }
+      s.food = {x:Math.floor(s.cols/2), y:Math.floor(s.rows/2)};
+    }
+
+    function layout(){
+      const margin = 36;
+      const availW = Math.max(200, view.w - margin*2);
+      const availH = Math.max(200, view.h - margin*2);
+      const cell = Math.floor(Math.min(availW / s.cols, availH / s.rows));
+      s.cell = clamp(cell, 18, 56);
+      s.playW = s.cols * s.cell;
+      s.playH = s.rows * s.cell;
+      s.offX = Math.floor((view.w - s.playW)/2);
+      s.offY = Math.floor((view.h - s.playH)/2);
+    }
+
+    function roundRect(x,y,w,h,r){
+      const rr = Math.min(r, w/2, h/2);
+      ctx.beginPath();
+      ctx.moveTo(x+rr, y);
+      ctx.arcTo(x+w, y, x+w, y+h, rr);
+      ctx.arcTo(x+w, y+h, x, y+h, rr);
+      ctx.arcTo(x, y+h, x, y, rr);
+      ctx.arcTo(x, y, x+w, y, rr);
+      ctx.closePath();
+    }
+
+    function draw(){
+      const w = view.w, h = view.h;
+      ctx.clearRect(0,0,w,h);
+
+      // bezel
+      const bezel = ctx.createLinearGradient(0,0,w,h);
+      bezel.addColorStop(0,'#0b0b0b');
+      bezel.addColorStop(.5,'#050505');
+      bezel.addColorStop(1,'#020202');
+      ctx.fillStyle = bezel;
+      ctx.fillRect(0,0,w,h);
+
+      // board
+      const bg = ctx.createLinearGradient(s.offX, s.offY, s.offX+s.playW, s.offY+s.playH);
+      bg.addColorStop(0,'#070707');
+      bg.addColorStop(1,'#020202');
+      ctx.fillStyle = bg;
+      ctx.fillRect(s.offX, s.offY, s.playW, s.playH);
+
+      // grid
+      ctx.globalAlpha = 0.26;
+      ctx.strokeStyle = '#232323';
+      ctx.lineWidth = 1;
+      for(let x=0;x<=s.cols;x++){
+        const px = s.offX + x*s.cell + .5;
+        ctx.beginPath(); ctx.moveTo(px, s.offY); ctx.lineTo(px, s.offY+s.playH); ctx.stroke();
+      }
+      for(let y=0;y<=s.rows;y++){
+        const py = s.offY + y*s.cell + .5;
+        ctx.beginPath(); ctx.moveTo(s.offX, py); ctx.lineTo(s.offX+s.playW, py); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // border glow
+      ctx.save();
+      ctx.shadowColor = 'rgba(237,10,34,0.45)';
+      ctx.shadowBlur = 14;
+      ctx.strokeStyle = 'rgba(237,10,34,0.78)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(s.offX+1, s.offY+1, s.playW-2, s.playH-2);
+      ctx.restore();
+
+      // food
+      const fx = s.offX + s.food.x*s.cell;
+      const fy = s.offY + s.food.y*s.cell;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(fx+s.cell/2, fy+s.cell/2, Math.max(4, s.cell*0.28), 0, Math.PI*2);
+      ctx.fill();
+
+      // snake
+      for(let i=0;i<s.body.length;i++){
+        const p = s.body[i];
+        const x = s.offX + p.x*s.cell;
+        const y = s.offY + p.y*s.cell;
+        const pad = 2;
+        const rx = x+pad, ry=y+pad, rw=s.cell-pad*2, rh=s.cell-pad*2;
+        if(i===0){
+          ctx.fillStyle = 'var(--kg-red)';
+          ctx.shadowColor = 'rgba(237,10,34,.25)';
+          ctx.shadowBlur = 10;
+        } else {
+          ctx.fillStyle = '#5a0000';
+          ctx.shadowBlur = 0;
+        }
+        roundRect(rx,ry,rw,rh,6);
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+
+      // vignette
+      const g = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.2, w/2,h/2,Math.min(w,h)*0.85);
+      g.addColorStop(0,'rgba(0,0,0,0)');
+      g.addColorStop(1,'rgba(0,0,0,.45)');
+      ctx.fillStyle=g;
+      ctx.fillRect(0,0,w,h);
+    }
+
+    function reset(){
+      s.score = 0;
+      const cx = Math.floor(s.cols/2);
+      const cy = Math.floor(s.rows/2);
+      s.body = [{x:cx,y:cy},{x:cx-1,y:cy},{x:cx-2,y:cy}];
+      s.dir = {x:1,y:0};
+      s.next = {x:1,y:0};
+      spawnFood();
+      setHud(s.score, s.high, true);
+      hideOverlay();
+      draw();
+    }
+
+    function end(){
+      s.running = false;
+      cancelAnimationFrame(s.raf);
+      if(s.score > s.high){
+        s.high = s.score;
+        localStorage.setItem('kg_high_snake', String(s.high));
+      }
+      setHud(s.score, s.high, true);
+      showOverlay('GAME OVER', 'TENTE NOVAMENTE');
+    }
+
+    function tick(){
+      s.dir = s.next;
+      const head = s.body[0];
+      const nx = head.x + s.dir.x;
+      const ny = head.y + s.dir.y;
+
+      if(nx<0 || ny<0 || nx>=s.cols || ny>=s.rows){ end(); return; }
+      for(let i=0;i<s.body.length;i++){
+        const p=s.body[i];
+        if(p.x===nx && p.y===ny){ end(); return; }
+      }
+
+      s.body.unshift({x:nx,y:ny});
+
+      if(nx===s.food.x && ny===s.food.y){
+        s.score += 1;
+        setHud(s.score, s.high, true);
+        spawnFood();
+      } else {
+        s.body.pop();
+      }
+
+      draw();
+    }
+
+    function loop(now){
+      if(!s.running) return;
+      if(now - s.last >= s.tickMs){
+        s.last = now;
+        tick();
+      }
+      s.raf = requestAnimationFrame(loop);
+    }
+
+    function key(e){
+      const k = e.key;
+      let nd = null;
+      if(k==='ArrowUp'||k==='w'||k==='W') nd={x:0,y:-1};
+      else if(k==='ArrowDown'||k==='s'||k==='S') nd={x:0,y:1};
+      else if(k==='ArrowLeft'||k==='a'||k==='A') nd={x:-1,y:0};
+      else if(k==='ArrowRight'||k==='d'||k==='D') nd={x:1,y:0};
+      if(!nd) return false;
+      if(nd.x===-s.dir.x && nd.y===-s.dir.y) return true;
+      s.next = nd;
+      return true;
+    }
+
+    games.snake = {
+      start(){
+        s.active = true;
+        resizeCanvas();
+        layout();
+        reset();
+        s.running = true;
+        s.last = performance.now();
+        cancelAnimationFrame(s.raf);
+        s.raf = requestAnimationFrame(loop);
+      },
+      stop(){
+        s.active = false;
+        s.running = false;
+        cancelAnimationFrame(s.raf);
+      },
+      resize(){
+        resizeCanvas();
+        layout();
+        if(s.active) draw();
+      },
+      key(e){
+        if(!s.active || !s.running) return false;
+        return key(e);
+      },
+      restart(){
+        this.start();
+      }
+    };
+  })();
+
+  // ---------------- TETRIS ----------------
+  (function(){
+    const t = {
+      active:false, running:false,
+      raf:0, last:0, dropMs:650,
+      cols:10, rows:20, cell:24,
+      ox:0, oy:0,
+      grid:[], cur:null,
+      score:0,
+      high: parseInt(localStorage.getItem('kg_high_tetris')||'0',10) || 0
+    };
+
+    const SHAPES = {
+      I:[[1,1,1,1]],
+      O:[[1,1],[1,1]],
+      T:[[0,1,0],[1,1,1]],
+      L:[[1,0],[1,0],[1,1]],
+      J:[[0,1],[0,1],[1,1]],
+      S:[[0,1,1],[1,1,0]],
+      Z:[[1,1,0],[0,1,1]]
+    };
+
+    function newPiece(){
+      const ks = Object.keys(SHAPES);
+      const k = ks[Math.floor(Math.random()*ks.length)];
+      const m = SHAPES[k].map(r=>r.slice());
+      const x = Math.floor((t.cols - m[0].length)/2);
+      return { m, x, y:-1 };
+    }
+
+    function layout(){
+      const margin = 36;
+      const availW = Math.max(200, view.w - margin*2);
+      const availH = Math.max(200, view.h - margin*2);
+      t.cell = clamp(Math.floor(Math.min(availW / t.cols, availH / t.rows)), 16, 44);
+      const pw = t.cols*t.cell, ph=t.rows*t.cell;
+      t.ox = Math.floor((view.w - pw)/2);
+      t.oy = Math.floor((view.h - ph)/2);
+    }
+
+    function collide(px, py, m){
+      for(let y=0;y<m.length;y++){
+        for(let x=0;x<m[y].length;x++){
+          if(!m[y][x]) continue;
+          const gx = px + x;
+          const gy = py + y;
+          if(gx<0 || gx>=t.cols || gy>=t.rows) return true;
+          if(gy>=0 && t.grid[gy][gx]) return true;
+        }
+      }
+      return false;
+    }
+
+    function merge(){
+      const m = t.cur.m;
+      for(let y=0;y<m.length;y++){
+        for(let x=0;x<m[y].length;x++){
+          if(!m[y][x]) continue;
+          const gy = t.cur.y + y;
+          if(gy>=0) t.grid[gy][t.cur.x + x] = 1;
+        }
+      }
+    }
+
+    function clearLines(){
+      let cleared = 0;
+      for(let y=t.rows-1;y>=0;y--){
+        if(t.grid[y].every(v=>v)){
+          t.grid.splice(y,1);
+          t.grid.unshift(Array(t.cols).fill(0));
+          cleared++;
+          y++;
+        }
+      }
+      if(cleared){
+        const add = (cleared===4) ? 60 : cleared*10;
+        t.score += add;
+        if(t.score > t.high){
+          t.high = t.score;
+          localStorage.setItem('kg_high_tetris', String(t.high));
+        }
+        setHud(t.score, t.high, true);
+      }
+    }
+
+    function rotate(m){
+      return m[0].map((_,i)=>m.map(r=>r[i]).reverse());
+    }
+
+    function end(){
+      t.running = false;
+      cancelAnimationFrame(t.raf);
+      showOverlay('GAME OVER','TENTE NOVAMENTE');
+    }
+
+    function step(){
+      if(!t.cur) return;
+      if(!collide(t.cur.x, t.cur.y+1, t.cur.m)){
+        t.cur.y++;
+        return;
+      }
+      merge();
+      clearLines();
+      t.cur = newPiece();
+      if(collide(t.cur.x, t.cur.y, t.cur.m)) end();
+    }
+
+    function draw(){
+      const w=view.w, h=view.h;
+      ctx.clearRect(0,0,w,h);
+
+      // bezel
+      const bezel = ctx.createLinearGradient(0,0,w,h);
+      bezel.addColorStop(0,'#0b0b0b');
+      bezel.addColorStop(.5,'#050505');
+      bezel.addColorStop(1,'#020202');
+      ctx.fillStyle = bezel;
+      ctx.fillRect(0,0,w,h);
+
+      // board bg
+      const pw = t.cols*t.cell, ph=t.rows*t.cell;
+      const bg = ctx.createLinearGradient(t.ox,t.oy,t.ox+pw,t.oy+ph);
+      bg.addColorStop(0,'#070707');
+      bg.addColorStop(1,'#020202');
+      ctx.fillStyle = bg;
+      ctx.fillRect(t.ox,t.oy,pw,ph);
+
+      // grid
+      ctx.globalAlpha = 0.26;
+      ctx.strokeStyle = '#232323';
+      ctx.lineWidth = 1;
+      for(let x=0;x<=t.cols;x++){
+        const px = t.ox + x*t.cell + .5;
+        ctx.beginPath(); ctx.moveTo(px,t.oy); ctx.lineTo(px,t.oy+ph); ctx.stroke();
+      }
+      for(let y=0;y<=t.rows;y++){
+        const py = t.oy + y*t.cell + .5;
+        ctx.beginPath(); ctx.moveTo(t.ox,py); ctx.lineTo(t.ox+pw,py); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // border glow
+      ctx.save();
+      ctx.shadowColor = 'rgba(237,10,34,0.45)';
+      ctx.shadowBlur = 14;
+      ctx.strokeStyle = 'rgba(237,10,34,0.78)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(t.ox+1, t.oy+1, pw-2, ph-2);
+      ctx.restore();
+
+      // fixed blocks (mais visíveis)
+      for(let y=0;y<t.rows;y++){
+        for(let x=0;x<t.cols;x++){
+          if(!t.grid[y][x]) continue;
+          ctx.fillStyle = '#a00000';
+          ctx.shadowColor = 'rgba(237,10,34,.25)';
+          ctx.shadowBlur = 6;
+          ctx.fillRect(t.ox + x*t.cell + 1, t.oy + y*t.cell + 1, t.cell-2, t.cell-2);
+        }
+      }
+      ctx.shadowBlur = 0;
+
+      // current piece (bem viva)
+      if(t.cur){
+        const m = t.cur.m;
+        ctx.fillStyle = '#ff3b3b';
+        ctx.shadowColor = 'rgba(255,80,80,.6)';
+        ctx.shadowBlur = 16;
+        for(let y=0;y<m.length;y++){
+          for(let x=0;x<m[y].length;x++){
+            if(!m[y][x]) continue;
+            const gx = t.cur.x + x;
+            const gy = t.cur.y + y;
+            if(gy < 0) continue;
+            ctx.fillRect(t.ox + gx*t.cell + 1, t.oy + gy*t.cell + 1, t.cell-2, t.cell-2);
+          }
+        }
+        ctx.shadowBlur = 0;
+      }
+
+      // vignette
+      const g = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.2, w/2,h/2,Math.min(w,h)*0.85);
+      g.addColorStop(0,'rgba(0,0,0,0)');
+      g.addColorStop(1,'rgba(0,0,0,.45)');
+      ctx.fillStyle=g;
+      ctx.fillRect(0,0,w,h);
+    }
+
+    function loop(now){
+      if(!t.running) return;
+      if(now - t.last >= t.dropMs){
+        t.last = now;
+        step();
+        draw();
+      }
+      t.raf = requestAnimationFrame(loop);
+    }
+
+    function hardDrop(){
+      while(!collide(t.cur.x, t.cur.y+1, t.cur.m)) t.cur.y++;
+      step();
+    }
+
+    function key(e){
+      const k = e.key;
+      if(k==='ArrowLeft'){
+        if(!collide(t.cur.x-1, t.cur.y, t.cur.m)) t.cur.x--;
+        draw(); return true;
+      }
+      if(k==='ArrowRight'){
+        if(!collide(t.cur.x+1, t.cur.y, t.cur.m)) t.cur.x++;
+        draw(); return true;
+      }
+      if(k==='ArrowDown'){
+        step(); draw(); return true;
+      }
+      if(k==='ArrowUp'){
+        const r = rotate(t.cur.m);
+        if(!collide(t.cur.x, t.cur.y, r)) t.cur.m = r;
+        else if(!collide(t.cur.x-1, t.cur.y, r)) { t.cur.x--; t.cur.m=r; }
+        else if(!collide(t.cur.x+1, t.cur.y, r)) { t.cur.x++; t.cur.m=r; }
+        draw(); return true;
+      }
+      if(e.code==='Space'){
+        hardDrop(); draw(); return true;
+      }
+      return false;
+    }
+
+    games.tetris = {
+      start(){
+        t.active=true;
+        resizeCanvas();
+        layout();
+        t.grid = Array.from({length:t.rows}, ()=>Array(t.cols).fill(0));
+        t.cur = newPiece();
+        t.score = 0;
+        setHud(t.score, t.high, true);
+        hideOverlay();
+        draw();
+        t.running = true;
+        t.last = performance.now();
+        cancelAnimationFrame(t.raf);
+        t.raf = requestAnimationFrame(loop);
+      },
+      stop(){
+        t.active=false;
+        t.running=false;
+        cancelAnimationFrame(t.raf);
+      },
+      resize(){
+        resizeCanvas();
+        layout();
+        if(t.active) draw();
+      },
+      key(e){
+        if(!t.active || !t.running) return false;
+        return key(e);
+      },
+      restart(){
+        this.start();
+      }
+    };
+  })();
+  // ---------------- 2048 ----------------
+  (function(){
+    const g = {
+      active:false, running:false,
+      size:4,
+      grid:[],
+      score:0,
+      high: parseInt(localStorage.getItem('kg_high_2048')||'0',10) || 0,
+      cell:0,
+      ox:0, oy:0
+    };
+
+    function emptyGrid(){
+      g.grid = Array.from({length:g.size}, ()=>Array(g.size).fill(0));
+    }
+
+    function addTile(){
+      const empties=[];
+      for(let y=0;y<g.size;y++)for(let x=0;x<g.size;x++)
+        if(!g.grid[y][x]) empties.push({x,y});
+      if(!empties.length) return;
+      const p = empties[Math.floor(Math.random()*empties.length)];
+      g.grid[p.y][p.x] = Math.random()<0.9 ? 2 : 4;
+    }
+
+    function layout(){
+      const margin = 36;
+      const availW = Math.max(200, view.w - margin*2);
+      const availH = Math.max(200, view.h - margin*2);
+      g.cell = clamp(Math.floor(Math.min(availW / g.size, availH / g.size)), 48, 140);
+      const pw = g.size * g.cell;
+      const ph = g.size * g.cell;
+      g.ox = Math.floor((view.w - pw)/2);
+      g.oy = Math.floor((view.h - ph)/2);
+    }
+
+    function draw(){
+      const w=view.w,h=view.h;
+      ctx.clearRect(0,0,w,h);
+
+      // bezel
+      const bz = ctx.createLinearGradient(0,0,w,h);
+      bz.addColorStop(0,'#0b0b0b');
+      bz.addColorStop(.5,'#050505');
+      bz.addColorStop(1,'#020202');
+      ctx.fillStyle=bz;
+      ctx.fillRect(0,0,w,h);
+
+      const pw=g.size*g.cell, ph=g.size*g.cell;
+
+      // board
+      const bg = ctx.createLinearGradient(g.ox,g.oy,g.ox+pw,g.oy+ph);
+      bg.addColorStop(0,'#070707');
+      bg.addColorStop(1,'#020202');
+      ctx.fillStyle=bg;
+      ctx.fillRect(g.ox,g.oy,pw,ph);
+
+      // glow border
+      ctx.save();
+      ctx.shadowColor='rgba(237,10,34,.45)';
+      ctx.shadowBlur=14;
+      ctx.strokeStyle='rgba(237,10,34,.78)';
+      ctx.lineWidth=2;
+      ctx.strokeRect(g.ox+1,g.oy+1,pw-2,ph-2);
+      ctx.restore();
+
+      // tiles
+      for(let y=0;y<g.size;y++){
+        for(let x=0;x<g.size;x++){
+          const v = g.grid[y][x];
+          const rx = g.ox + x*g.cell + 6;
+          const ry = g.oy + y*g.cell + 6;
+          const rw = g.cell - 12;
+
+          if(!v){
+            ctx.fillStyle='#111';
+            ctx.fillRect(rx,ry,rw,rw);
+            continue;
+          }
+
+          ctx.fillStyle = '#ff3b3b';
+          ctx.shadowColor='rgba(255,80,80,.6)';
+          ctx.shadowBlur=12;
+          ctx.fillRect(rx,ry,rw,rw);
+          ctx.shadowBlur=0;
+
+          ctx.fillStyle='#000';
+          ctx.font = '900 ' + Math.floor(rw*0.45) + 'px Segoe UI';
+          ctx.textAlign='center';
+          ctx.textBaseline='middle';
+          ctx.fillText(String(v), rx+rw/2, ry+rw/2);
+        }
+      }
+
+      // vignette
+      const vg = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.2, w/2,h/2,Math.min(w,h)*0.85);
+      vg.addColorStop(0,'rgba(0,0,0,0)');
+      vg.addColorStop(1,'rgba(0,0,0,.45)');
+      ctx.fillStyle=vg;
+      ctx.fillRect(0,0,w,h);
+    }
+
+    function slide(row){
+      const arr = row.filter(v=>v);
+      for(let i=0;i<arr.length-1;i++){
+        if(arr[i]===arr[i+1]){
+          arr[i]*=2;
+          g.score += arr[i];
+          arr[i+1]=0;
+        }
+      }
+      return arr.filter(v=>v);
+    }
+
+    function rotateGrid(){
+      const n=g.size;
+      const r = Array.from({length:n},()=>Array(n).fill(0));
+      for(let y=0;y<n;y++)for(let x=0;x<n;x++) r[x][n-1-y]=g.grid[y][x];
+      g.grid=r;
+    }
+
+    function move(dir){
+      // dir: 0 left, 1 up, 2 right, 3 down
+      for(let i=0;i<dir;i++) rotateGrid();
+
+      let moved=false;
+      for(let y=0;y<g.size;y++){
+        const row=g.grid[y];
+        const sl=slide(row);
+        const nr = sl.concat(Array(g.size-sl.length).fill(0));
+        if(nr.some((v,i)=>v!==row[i])) moved=true;
+        g.grid[y]=nr;
+      }
+
+      for(let i=0;i<(4-dir)%4;i++) rotateGrid();
+
+      if(moved){
+        addTile();
+        if(g.score>g.high){
+          g.high=g.score;
+          localStorage.setItem('kg_high_2048',String(g.high));
+        }
+        setHud(g.score,g.high,true);
+        draw();
+        if(!hasMoves()) showOverlay('GAME OVER','SEM MOVIMENTOS');
+      }
+    }
+
+    function hasMoves(){
+      for(let y=0;y<g.size;y++)for(let x=0;x<g.size;x++){
+        if(!g.grid[y][x]) return true;
+        if(x<g.size-1 && g.grid[y][x]===g.grid[y][x+1]) return true;
+        if(y<g.size-1 && g.grid[y][x]===g.grid[y+1][x]) return true;
+      }
+      return false;
+    }
+
+    games['2048'] = {
+      start(){
+        g.active=true;
+        resizeCanvas();
+        layout();
+        emptyGrid();
+        g.score=0;
+        setHud(g.score,g.high,true);
+        addTile(); addTile();
+        hideOverlay();
+        draw();
+        g.running=true;
+      },
+      stop(){
+        g.active=false;
+        g.running=false;
+      },
+      resize(){
+        resizeCanvas();
+        layout();
+        if(g.active) draw();
+      },
+      key(e){
+        if(!g.active||!g.running) return false;
+        if(e.key==='ArrowLeft'){ move(0); return true; }
+        if(e.key==='ArrowUp'){ move(3); return true; }
+        if(e.key==='ArrowRight'){ move(2); return true; }
+        if(e.key==='ArrowDown'){ move(1); return true; }
+        return false;
+      },
+      restart(){
+        this.start();
+      }
+    };
+  })();
+ // ---------------- PONG ----------------
+(function(){
+  let pongLives, pongLivesDots;
+
+  const p = {
+    active:false, running:false,
+    raf:0, last:0,
+
+    // score / record
+    score:0,
+    high: parseInt(localStorage.getItem('kg_high_pong')||'0',10) || 0,
+
+    // "vidas" (erros antes do game over)
+    lives:3,
+    maxLives:3,
+
+    // playfield
+    pad: 26,
+    ox:0, oy:0, pw:0, ph:0,
+
+    // paddles/ball
+    paddleW: 14,
+    paddleH: 110,
+    paddleSpeed: 520,
+
+    leftY: 0,
+    rightY: 0,
+
+    ballX:0, ballY:0,
+    ballR: 7,
+    ballVX: 0,
+    ballVY: 0,
+
+    // input
+    moveUp:false,
+    moveDown:false,
+
+    // rules
+    winScore: 7
+  };
+
+  function layout(){
+    const pad = 28;
+    const w = view.w, h = view.h;
+
+    p.pad = pad;
+    p.ox = pad;
+    p.oy = pad;
+    p.pw = Math.max(320, w - pad*2);
+    p.ph = Math.max(240, h - pad*2);
+
+    const s = Math.min(p.pw, p.ph);
+    p.paddleW = clamp(Math.floor(s * 0.022), 10, 18);
+    p.paddleH = clamp(Math.floor(s * 0.16), 80, 140);
+    p.ballR   = clamp(Math.floor(s * 0.012), 5, 9);
+    p.paddleSpeed = clamp(Math.floor(s * 0.85), 420, 720);
+  }
+
+  function drawLives(){
+    if(!pongLives || !pongLivesDots) return;
+
+    pongLives.style.display = 'flex';
+    pongLivesDots.innerHTML = '';
+
+    for(let i=0;i<p.maxLives;i++){
+      const d = document.createElement('div');
+      d.style.width = '8px';
+      d.style.height = '8px';
+      d.style.borderRadius = '50%';
+      d.style.background = i < p.lives ? '#ed0a22' : 'rgba(255,255,255,.15)';
+      d.style.boxShadow = i < p.lives ? '0 0 6px rgba(237,10,34,.6)' : 'none';
+      pongLivesDots.appendChild(d);
+    }
+  }
+
+  function resetRound(dir){
+    p.leftY  = p.oy + (p.ph - p.paddleH)/2;
+    p.rightY = p.oy + (p.ph - p.paddleH)/2;
+
+    p.ballX = p.ox + p.pw/2;
+    p.ballY = p.oy + p.ph/2;
+
+    const base = clamp(Math.min(p.pw, p.ph) * 0.55, 320, 520);
+    const ang = (Math.random()*0.6 - 0.3); // -0.3..0.3
+    const speed = base;
+
+    p.ballVX = (dir>=0 ? 1 : -1) * speed;
+    p.ballVY = speed * ang;
+  }
+
+  function end(msg){
+    p.running = false;
+    cancelAnimationFrame(p.raf);
+
+    if(p.score > p.high){
+      p.high = p.score;
+      localStorage.setItem('kg_high_pong', String(p.high));
+    }
+
+    // HUD
+    setHud(p.score, p.high, true);
+
+    // mantém as vidas desenhadas no topo no estado final
+    drawLives();
+
+    // garante que o overlay vai "restartar" o Pong
+    currentGame = games.pong;
+
+    showOverlay(msg || 'GAME OVER', 'RESTART PARA NOVA PARTIDA');
+  }
+
+  function draw(){
+    const w=view.w, h=view.h;
+    ctx.clearRect(0,0,w,h);
+
+    // bezel
+    const bz = ctx.createLinearGradient(0,0,w,h);
+    bz.addColorStop(0,'#0b0b0b');
+    bz.addColorStop(.5,'#050505');
+    bz.addColorStop(1,'#020202');
+    ctx.fillStyle=bz;
+    ctx.fillRect(0,0,w,h);
+
+    // board
+    const bg = ctx.createLinearGradient(p.ox,p.oy,p.ox+p.pw,p.oy+p.ph);
+    bg.addColorStop(0,'#070707');
+    bg.addColorStop(1,'#020202');
+    ctx.fillStyle=bg;
+    ctx.fillRect(p.ox,p.oy,p.pw,p.ph);
+
+    // grid sutil
+    ctx.globalAlpha = 0.20;
+    ctx.strokeStyle = '#232323';
+    ctx.lineWidth = 1;
+    const step = clamp(Math.floor(Math.min(p.pw,p.ph)/10), 26, 62);
+    for(let x=p.ox; x<=p.ox+p.pw; x+=step){
+      ctx.beginPath(); ctx.moveTo(x+.5, p.oy); ctx.lineTo(x+.5, p.oy+p.ph); ctx.stroke();
+    }
+    for(let y=p.oy; y<=p.oy+p.ph; y+=step){
+      ctx.beginPath(); ctx.moveTo(p.ox, y+.5); ctx.lineTo(p.ox+p.pw, y+.5); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // borda glow
+    ctx.save();
+    ctx.shadowColor = 'rgba(237,10,34,0.45)';
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = 'rgba(237,10,34,0.78)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(p.ox+1, p.oy+1, p.pw-2, p.ph-2);
+    ctx.restore();
+
+    // linha do meio pontilhada
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = '#2a2a2a';
+    const midX = p.ox + p.pw/2;
+    const dashH = clamp(Math.floor(p.ph/22), 10, 18);
+    const gap = dashH;
+    for(let y=p.oy+8; y<p.oy+p.ph-8; y += dashH + gap){
+      ctx.fillRect(midX-2, y, 4, dashH);
+    }
+    ctx.globalAlpha = 1;
+
+    // paddles
+    ctx.save();
+    ctx.shadowColor = 'rgba(237,10,34,.25)';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = '#a00000';
+    ctx.fillRect(p.ox + 18, p.leftY, p.paddleW, p.paddleH);
+    ctx.fillRect(p.ox + p.pw - 18 - p.paddleW, p.rightY, p.paddleW, p.paddleH);
+    ctx.restore();
+
+    // ball
+    ctx.save();
+    ctx.fillStyle = '#ff3b3b';
+    ctx.shadowColor = 'rgba(255,80,80,.6)';
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.arc(p.ballX, p.ballY, p.ballR, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // vignette
+    const vg = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.2, w/2,h/2,Math.min(w,h)*0.85);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,'rgba(0,0,0,.45)');
+    ctx.fillStyle=vg;
+    ctx.fillRect(0,0,w,h);
+  }
+
+  function clampPaddles(){
+    const minY = p.oy;
+    const maxY = p.oy + p.ph - p.paddleH;
+    p.leftY = clamp(p.leftY, minY, maxY);
+    p.rightY = clamp(p.rightY, minY, maxY);
+  }
+
+  function update(dt){
+    // player paddle
+    const vy = (p.moveUp ? -1 : 0) + (p.moveDown ? 1 : 0);
+    p.leftY += vy * p.paddleSpeed * dt;
+
+    // AI paddle
+    const target = p.ballY - p.paddleH/2;
+    const diff = target - p.rightY;
+    const aiSpeed = p.paddleSpeed * 0.72;
+    p.rightY += clamp(diff, -aiSpeed*dt, aiSpeed*dt);
+
+    clampPaddles();
+
+    // move ball
+    p.ballX += p.ballVX * dt;
+    p.ballY += p.ballVY * dt;
+
+    // top/bottom bounce
+    const top = p.oy + p.ballR;
+    const bot = p.oy + p.ph - p.ballR;
+    if(p.ballY < top){ p.ballY = top; p.ballVY *= -1; }
+    if(p.ballY > bot){ p.ballY = bot; p.ballVY *= -1; }
+
+    // paddle collision
+    const leftX = p.ox + 18 + p.paddleW;
+    const rightX = p.ox + p.pw - 18 - p.paddleW;
+
+    // left hit
+    if(p.ballVX < 0 && p.ballX - p.ballR <= leftX){
+      const py = p.leftY;
+      if(p.ballY >= py && p.ballY <= py + p.paddleH){
+        p.ballX = leftX + p.ballR;
+        p.ballVX *= -1;
+        const rel = (p.ballY - (py + p.paddleH/2)) / (p.paddleH/2);
+        p.ballVY += rel * 220;
+        p.ballVX *= 1.03;
+      }
+    }
+
+    // right hit
+    if(p.ballVX > 0 && p.ballX + p.ballR >= rightX){
+      const py = p.rightY;
+      if(p.ballY >= py && p.ballY <= py + p.paddleH){
+        p.ballX = rightX - p.ballR;
+        p.ballVX *= -1;
+        const rel = (p.ballY - (py + p.paddleH/2)) / (p.paddleH/2);
+        p.ballVY += rel * 200;
+        p.ballVX *= 1.03;
+      }
+    }
+
+    // scoring
+    if(p.ballX < p.ox - 40){
+      // jogador errou (AI marcou): perde vida
+      p.lives -= 1;
+
+      // <<< ESTA É A CORREÇÃO PRINCIPAL
+      drawLives();
+
+      if(p.lives <= 0){
+        end('GAME OVER');
+        return;
+      }
+
+      setHud(p.score, p.high, true);
+      resetRound(1);
+    }
+
+    if(p.ballX > p.ox + p.pw + 40){
+      // jogador marcou
+      p.score += 1;
+      setHud(p.score, p.high, true);
+
+      if(p.score >= p.winScore){
+        end('VOCÊ VENCEU!');
+        return;
+      }
+      resetRound(-1);
+    }
+  }
+
+  function loop(ts){
+    if(!p.running) return;
+    const dt = Math.min(0.032, (ts - p.last) / 1000);
+    p.last = ts;
+
+    update(dt);
+    draw();
+
+    p.raf = requestAnimationFrame(loop);
+  }
+
+  function keyDown(e){
+    if(e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W'){ p.moveUp = true; return true; }
+    if(e.key === 'ArrowDown' || e.key === 's' || e.key === 'S'){ p.moveDown = true; return true; }
+    return false;
+  }
+  function keyUp(e){
+    if(e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W'){ p.moveUp = false; return true; }
+    if(e.key === 'ArrowDown' || e.key === 's' || e.key === 'S'){ p.moveDown = false; return true; }
+    return false;
+  }
+
+  games.pong = {
+    start(){
+      p.active = true;
+      resizeCanvas();
+      layout();
+
+      // pega o HUD de vidas (existe porque o Arkade já montou o frame)
+      pongLives = document.getElementById('pong-lives');
+      pongLivesDots = document.getElementById('pong-lives-dots');
+
+      p.score = 0;
+      p.lives = p.maxLives;
+
+      // desenha vidas já no começo
+      drawLives();
+
+      setHud(p.score, p.high, true);
+      hideOverlay();
+
+      resetRound(1);
+
+      p.moveUp = false;
+      p.moveDown = false;
+
+      draw();
+
+      p.running = true;
+      p.last = performance.now();
+      cancelAnimationFrame(p.raf);
+      p.raf = requestAnimationFrame(loop);
+    },
+    stop(){
+      p.active = false;
+      p.running = false;
+      cancelAnimationFrame(p.raf);
+      p.moveUp = false;
+      p.moveDown = false;
+
+      // esconde o HUD de vidas ao sair do pong
+      if(pongLives) pongLives.style.display = 'none';
+    },
+    resize(){
+      resizeCanvas();
+      layout();
+      if(p.active) draw();
+    },
+    key(e){
+      if(!p.active || !p.running) return false;
+      return keyDown(e);
+    },
+    keyup(e){
+      if(!p.active) return false;
+      return keyUp(e);
+    },
+    restart(){
+      this.start();
+    }
+  };
+})();
+// ---------------- DINOSSAURINHO ----------------
+(function(){
+
+  const d = {
+    active:false, running:false,
+    raf:0,last:0,
+
+    score:0,
+    high: parseInt(localStorage.getItem('kg_high_dino')||'0',10)||0,
+
+    // chão / velocidade
+    ground:0,
+    speed:0,
+    baseSpeed: 360,
+    maxSpeed: 900,
+    accel: 26, // aceleração por segundo (gradativa)
+
+    // dino
+    x: 80,
+    y:0, vy:0,
+    size:28,
+
+    // mundo
+    obstacles:[],
+
+    // tuned physics
+    gravity: 1850,
+    jumpVel: -760,
+
+    // spawn control
+    spawnTimer: 0,
+    nextSpawn: 0.9, // segundos
+
+    // layout
+    pad: 26
+  };
+
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+  function layout(){
+    const w = view.w, h = view.h;
+
+    // chão com margem “arcade” (seguro em telas menores)
+    d.ground = Math.round(h - clamp(h * 0.18, 92, 140));
+
+    // escala leve do dino
+    const s = Math.min(w, h);
+    d.size = clamp(Math.round(s * 0.035), 22, 34);
+
+    // garante dino em cima do chão
+    d.y = d.ground - d.size;
+
+    // se ficou fora do chão por resize, corrige
+    const floorY = d.ground - d.size;
+    if(d.y > floorY) d.y = floorY;
+  }
+
+  function chooseNextSpawn(){
+    // Gap em segundos, cresce um pouco com a velocidade e tem random
+    // Mantém “jogável”: evita sequência impossível
+    const t = (d.speed - d.baseSpeed) / (d.maxSpeed - d.baseSpeed); // 0..1
+    const minT = 0.85 + t * 0.25;  // 0.85..1.10
+    const maxT = 1.35 + t * 0.40;  // 1.35..1.75
+    d.nextSpawn = minT + Math.random() * (maxT - minT);
+  }
+
+  function spawn(){
+    const w = view.w;
+
+    // Obstáculos um pouco mais “baixos” pra não exigir pulo perfeito sempre
+    const ow = 18 + Math.random()*18;      // 18..36
+    const oh = 22 + Math.random()*38;      // 22..60
+
+    // Coloca sempre fora da tela
+    d.obstacles.push({
+      x: w + 40,
+      w: ow,
+      h: oh
+    });
+  }
+
+  function reset(){
+    d.score = 0;
+    d.speed = d.baseSpeed;
+
+    d.obstacles = [];
+    d.vy = 0;
+
+    layout();
+
+    d.spawnTimer = 0;
+    chooseNextSpawn();
+
+    // Primeiro obstáculo: dá tempo do jogador “entrar no ritmo”
+    spawn();
+    d.obstacles[0].x = view.w + view.w * 0.55;
+
+    setHud(0, d.high, true);
+  }
+
+  function aabb(ax,ay,aw,ah, bx,by,bw,bh){
+    return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by;
+  }
+
+  function update(dt){
+    // score
+    d.score += dt * 10;
+    const s = Math.floor(d.score);
+    setHud(s, d.high, true);
+
+    // speed ramp (gradativo e suave)
+    d.speed = Math.min(d.maxSpeed, d.speed + dt * d.accel);
+
+    // jump physics
+    d.vy += d.gravity * dt;
+    d.y  += d.vy * dt;
+
+    const floorY = d.ground - d.size;
+    if(d.y > floorY){
+      d.y = floorY;
+      d.vy = 0;
+    }
+
+    // move obstáculos
+    for(let o of d.obstacles) o.x -= d.speed * dt;
+
+    // remove os que saíram
+    while(d.obstacles.length && d.obstacles[0].x < -120){
+      d.obstacles.shift();
+    }
+
+    // spawn contínuo (mantém 1–2 obstáculos no máximo)
+    d.spawnTimer += dt;
+
+    // Regras de justiça:
+    // - nunca mais que 2 obstáculos ao mesmo tempo
+    // - gap mínimo em px cresce com a velocidade
+    const pxMinGap = clamp(320 + (d.speed - d.baseSpeed) * 0.35, 320, 520);
+
+    const last = d.obstacles[d.obstacles.length - 1];
+    const lastRight = last ? (last.x + last.w) : -99999;
+
+    // Só spawna se:
+    // (a) passou do tempo
+    // (b) o último obstáculo já abriu espaço suficiente
+    // (c) ainda não tem 2 obstáculos na tela
+    if(d.spawnTimer >= d.nextSpawn && d.obstacles.length < 2){
+      const distOk = (view.w + 40) - lastRight >= pxMinGap;
+      if(distOk){
+        spawn();
+        d.spawnTimer = 0;
+        chooseNextSpawn();
+      } else {
+        // ainda tá muito perto, espera um pouco e tenta de novo
+        // (sem travar a criação para sempre)
+        d.spawnTimer = d.nextSpawn * 0.75;
+      }
+    }
+
+    // colisão
+    const dx = d.x, dy = d.y, ds = d.size;
+
+    for(let o of d.obstacles){
+      const ox = o.x;
+      const oy = d.ground - o.h;
+
+      if(aabb(dx,dy,ds,ds, ox,oy,o.w,o.h)){
+        end();
+        return;
+      }
+    }
+  }
+
+  function draw(){
+    const w=view.w, h=view.h;
+    ctx.clearRect(0,0,w,h);
+
+    // fundo
+    const bg = ctx.createLinearGradient(0,0,w,h);
+    bg.addColorStop(0,'#070707');
+    bg.addColorStop(1,'#020202');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,w,h);
+
+    // chão
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = 'rgba(255,255,255,.18)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, d.ground + 1);
+    ctx.lineTo(w, d.ground + 1);
+    ctx.stroke();
+    ctx.restore();
+
+    // dino (silhueta mais “dino”)
+    ctx.save();
+    ctx.translate(d.x, d.y);
+
+    ctx.fillStyle = '#ed0a22';
+    ctx.shadowColor = 'rgba(237,10,34,.65)';
+    ctx.shadowBlur = 10;
+
+    const S = d.size;
+
+    // corpo
+    ctx.fillRect(0, S*0.38, S*0.70, S*0.38);
+
+    // cabeça
+    ctx.fillRect(S*0.52, S*0.10, S*0.38, S*0.30);
+
+    // focinho
+    ctx.fillRect(S*0.82, S*0.22, S*0.14, S*0.12);
+
+    // “braço”
+    ctx.fillRect(S*0.38, S*0.52, S*0.10, S*0.10);
+
+    // pernas
+    ctx.fillRect(S*0.14, S*0.74, S*0.14, S*0.26);
+    ctx.fillRect(S*0.44, S*0.74, S*0.14, S*0.26);
+
+    // rabo
+    ctx.fillRect(-S*0.26, S*0.52, S*0.26, S*0.10);
+
+    ctx.restore();
+
+    // obstáculos
+    ctx.save();
+    ctx.fillStyle = '#a00000';
+    ctx.shadowColor = 'rgba(237,10,34,.4)';
+    ctx.shadowBlur = 10;
+
+    for(let o of d.obstacles){
+      ctx.fillRect(o.x, d.ground - o.h, o.w, o.h);
+    }
+    ctx.restore();
+
+    // vignette
+    const vg = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.2, w/2,h/2,Math.min(w,h)*0.9);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,'rgba(0,0,0,.45)');
+    ctx.fillStyle=vg;
+    ctx.fillRect(0,0,w,h);
+  }
+
+  function loop(ts){
+    if(!d.running) return;
+    const dt = Math.min(.032, (ts - d.last) / 1000);
+    d.last = ts;
+
+    update(dt);
+    draw();
+
+    d.raf = requestAnimationFrame(loop);
+  }
+
+  function end(){
+    d.running=false;
+    cancelAnimationFrame(d.raf);
+
+    const s = Math.floor(d.score);
+    if(s > d.high){
+      d.high = s;
+      localStorage.setItem('kg_high_dino', String(d.high));
+    }
+
+    setHud(s, d.high, true);
+
+    currentGame = games.dinossaurinho;
+    showOverlay('GAME OVER', 'FOI EXTINTO');
+  }
+
+  function jump(){
+    // só pula se estiver no chão
+    const floorY = d.ground - d.size;
+    if(d.y < floorY - 0.5) return;
+
+    d.vy = d.jumpVel;
+  }
+
+  games.dinossaurinho = {
+    start(){
+      resizeCanvas();
+      d.active = true;
+
+      reset();
+      hideOverlay();
+
+      d.running = true;
+      d.last = performance.now();
+      cancelAnimationFrame(d.raf);
+      d.raf = requestAnimationFrame(loop);
+    },
+    stop(){
+      d.active = false;
+      d.running = false;
+      cancelAnimationFrame(d.raf);
+    },
+    resize(){
+      resizeCanvas();
+
+      // realinha mundo sem “enterrar”
+      layout();
+
+      // mantém obstáculos em faixa razoável
+      for(let o of d.obstacles){
+        o.x = clamp(o.x, -160, view.w + view.w);
+      }
+
+      if(d.active) draw();
+    },
+    key(e){
+      if(!d.running) return false;
+
+      if(e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W'){
+        jump();
+        return true;
+      }
+      return false;
+    },
+    restart(){
+      this.start();
+    }
+  };
+
+})();
+
+// ---------------- CAMPO MINADO ----------------
+(function(){
+
+  const m = {
+    active:false, running:false,
+    raf:0, last:0,
+
+    // score/record
+    score:0,
+    high: parseInt(localStorage.getItem('kg_high_mines')||'0',10) || 0,
+
+    // grid
+    cols:0, rows:0,
+    mines:0,
+    cell:28,
+    ox:0, oy:0,
+    w:0, h:0,
+
+    // state
+    grid:[],          // each: {mine, adj, rev, flag}
+    started:false,
+    over:false,
+    revealedSafe:0,
+    flags:0,
+
+    // visuals
+    pad: 32
+  };
+
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+  function idx(x,y){ return y*m.cols + x; }
+
+  function inb(x,y){ return x>=0 && y>=0 && x<m.cols && y<m.rows; }
+
+  function neighbors(x,y){
+    const out=[];
+    for(let dy=-1; dy<=1; dy++){
+      for(let dx=-1; dx<=1; dx++){
+        if(dx===0 && dy===0) continue;
+        const nx=x+dx, ny=y+dy;
+        if(inb(nx,ny)) out.push([nx,ny]);
+      }
+    }
+    return out;
+  }
+
+  function layout(){
+    // escolhe tamanho de célula e centraliza tabuleiro
+    const w=view.w, h=view.h;
+    const pad = m.pad;
+
+    // "área útil" dentro do canvas (deixa o HUD em paz, já que ele fica fora do canvas)
+    const aw = w - pad*2;
+    const ah = h - pad*2;
+
+    // se ainda não tem grid, define um grid bom pro viewport
+    if(!m.cols || !m.rows){
+      // tenta algo “clássico” mas adaptativo
+      // (mantém jogável sem virar microscópio)
+      const targetCell = clamp(Math.floor(Math.min(w,h)/22), 22, 34);
+      const cols = clamp(Math.floor(aw / targetCell), 10, 24);
+      const rows = clamp(Math.floor(ah / targetCell), 10, 18);
+      m.cols = cols;
+      m.rows = rows;
+
+      // minas: ~15% com limites (não fica impossível)
+      m.mines = clamp(Math.round(m.cols*m.rows * 0.15), 10, Math.floor(m.cols*m.rows*0.22));
+    }
+
+    // agora calcula cell real pra caber certinho
+    m.cell = Math.floor(Math.min(aw / m.cols, ah / m.rows));
+    m.w = m.cell * m.cols;
+    m.h = m.cell * m.rows;
+
+    m.ox = Math.floor((w - m.w)/2);
+    m.oy = Math.floor((h - m.h)/2);
+  }
+
+  function makeEmptyGrid(){
+    m.grid = new Array(m.cols*m.rows);
+    for(let i=0;i<m.grid.length;i++){
+      m.grid[i] = { mine:false, adj:0, rev:false, flag:false };
+    }
+  }
+
+  function placeMinesAvoid(ax,ay){
+    // evita mina no primeiro clique e seus vizinhos
+    const forbidden = new Set();
+    forbidden.add(idx(ax,ay));
+    for(const [nx,ny] of neighbors(ax,ay)) forbidden.add(idx(nx,ny));
+
+    let placed = 0;
+    while(placed < m.mines){
+      const x = Math.floor(Math.random()*m.cols);
+      const y = Math.floor(Math.random()*m.rows);
+      const i = idx(x,y);
+      if(forbidden.has(i)) continue;
+      if(m.grid[i].mine) continue;
+      m.grid[i].mine = true;
+      placed++;
+    }
+
+    // adjacências
+    for(let y=0;y<m.rows;y++){
+      for(let x=0;x<m.cols;x++){
+        const c = m.grid[idx(x,y)];
+        if(c.mine){ c.adj = 0; continue; }
+        let n=0;
+        for(const [nx,ny] of neighbors(x,y)){
+          if(m.grid[idx(nx,ny)].mine) n++;
+        }
+        c.adj = n;
+      }
+    }
+
+    m.started = true;
+  }
+
+  function revealCell(x,y){
+    if(!inb(x,y)) return;
+    const c = m.grid[idx(x,y)];
+    if(c.rev || c.flag) return;
+
+    c.rev = true;
+
+    if(!c.mine){
+      m.revealedSafe++;
+      m.score = m.revealedSafe;
+      setHud(m.score, m.high, true);
+    }
+
+    // flood fill se adj == 0
+    if(!c.mine && c.adj === 0){
+      const q=[[x,y]];
+      while(q.length){
+        const [cx,cy]=q.pop();
+        for(const [nx,ny] of neighbors(cx,cy)){
+          const nc = m.grid[idx(nx,ny)];
+          if(nc.rev || nc.flag) continue;
+          nc.rev = true;
+          if(!nc.mine){
+            m.revealedSafe++;
+          }
+          if(!nc.mine && nc.adj === 0){
+            q.push([nx,ny]);
+          }
+        }
+      }
+      m.score = m.revealedSafe;
+      setHud(m.score, m.high, true);
+    }
+  }
+
+  function checkWin(){
+    const total = m.cols*m.rows;
+    const safe = total - m.mines;
+    return m.revealedSafe >= safe;
+  }
+
+  function gameOver(win){
+    m.running = false;
+    cancelAnimationFrame(m.raf);
+
+    // atualiza recorde
+    if(m.score > m.high){
+      m.high = m.score;
+      localStorage.setItem('kg_high_mines', String(m.high));
+    }
+    setHud(m.score, m.high, true);
+
+    currentGame = games.mines;
+
+    if(win){
+      showOverlay('VOCÊ VENCEU!', 'RESTART');
+    }else{
+      showOverlay('GAME OVER', 'explodiu');
+    }
+  }
+
+  function toggleFlag(x,y){
+    if(!inb(x,y)) return;
+    const c = m.grid[idx(x,y)];
+    if(c.rev) return;
+    c.flag = !c.flag;
+  }
+
+  function cellFromCanvas(px,py){
+    const x = Math.floor((px - m.ox) / m.cell);
+    const y = Math.floor((py - m.oy) / m.cell);
+    if(!inb(x,y)) return null;
+    return {x,y};
+  }
+
+  function draw(){
+    const w=view.w, h=view.h;
+    ctx.clearRect(0,0,w,h);
+
+    // fundo (mesmo vibe Arkade)
+    const bg = ctx.createLinearGradient(0,0,w,h);
+    bg.addColorStop(0,'#070707');
+    bg.addColorStop(1,'#020202');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,w,h);
+
+    // “mesa” do tabuleiro (leve brilho)
+    ctx.save();
+    ctx.shadowColor = 'rgba(237,10,34,0.22)';
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(m.ox-10, m.oy-10, m.w+20, m.h+20);
+    ctx.restore();
+
+    // grade
+    for(let y=0;y<m.rows;y++){
+      for(let x=0;x<m.cols;x++){
+        const c = m.grid[idx(x,y)];
+        const px = m.ox + x*m.cell;
+        const py = m.oy + y*m.cell;
+
+        // tile base
+        if(c.rev){
+          // revelado (mais chapado)
+          const g = ctx.createLinearGradient(px,py,px,py+m.cell);
+          g.addColorStop(0,'#0c0c0c');
+          g.addColorStop(1,'#050505');
+          ctx.fillStyle = g;
+          ctx.fillRect(px,py,m.cell,m.cell);
+
+          // conteúdo
+          if(c.mine){
+            // mina
+            ctx.save();
+            ctx.fillStyle = '#ed0a22';
+            ctx.shadowColor = 'rgba(237,10,34,.75)';
+            ctx.shadowBlur = 16;
+            ctx.beginPath();
+            ctx.arc(px+m.cell/2, py+m.cell/2, m.cell*0.18, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+          }else if(c.adj>0){
+            // número
+            ctx.save();
+            ctx.fillStyle = 'rgba(255,255,255,.88)';
+            ctx.font = `900 ${Math.floor(m.cell*0.46)}px Segoe UI, Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,.65)';
+            ctx.shadowBlur = 6;
+            ctx.fillText(String(c.adj), px+m.cell/2, py+m.cell/2+1);
+            ctx.restore();
+          }
+        }else{
+          // não revelado (bevel)
+          const g = ctx.createLinearGradient(px,py,px+m.cell,py+m.cell);
+          g.addColorStop(0,'#141414');
+          g.addColorStop(1,'#070707');
+          ctx.fillStyle = g;
+          ctx.fillRect(px,py,m.cell,m.cell);
+
+          // brilho borda superior/esquerda
+          ctx.globalAlpha = 0.35;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(px+1, py+m.cell-1);
+          ctx.lineTo(px+1, py+1);
+          ctx.lineTo(px+m.cell-1, py+1);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+
+          // sombra inferior/direita
+          ctx.globalAlpha = 0.35;
+          ctx.strokeStyle = '#000000';
+          ctx.beginPath();
+          ctx.moveTo(px+m.cell-1, py+1);
+          ctx.lineTo(px+m.cell-1, py+m.cell-1);
+          ctx.lineTo(px+1, py+m.cell-1);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+
+          // bandeira
+          if(c.flag){
+            ctx.save();
+            ctx.fillStyle = '#ed0a22';
+            ctx.shadowColor = 'rgba(237,10,34,.65)';
+            ctx.shadowBlur = 12;
+
+            const cx = px + m.cell*0.50;
+            const cy = py + m.cell*0.52;
+
+            // haste
+            ctx.fillRect(cx - m.cell*0.18, cy - m.cell*0.18, m.cell*0.07, m.cell*0.42);
+            // pano
+            ctx.beginPath();
+            ctx.moveTo(cx - m.cell*0.11, cy - m.cell*0.18);
+            ctx.lineTo(cx + m.cell*0.18, cy - m.cell*0.08);
+            ctx.lineTo(cx - m.cell*0.11, cy + m.cell*0.02);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+          }
+        }
+
+        // linhas da grade (bem visíveis)
+        ctx.strokeStyle = 'rgba(255,255,255,.10)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px+.5, py+.5, m.cell-1, m.cell-1);
+      }
+    }
+
+    // borda glow externa do tabuleiro
+    ctx.save();
+    ctx.shadowColor = 'rgba(237,10,34,0.35)';
+    ctx.shadowBlur = 18;
+    ctx.strokeStyle = 'rgba(237,10,34,0.55)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(m.ox+1, m.oy+1, m.w-2, m.h-2);
+    ctx.restore();
+
+    // vignette
+    const vg = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.2, w/2,h/2,Math.min(w,h)*0.9);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,'rgba(0,0,0,.45)');
+    ctx.fillStyle=vg;
+    ctx.fillRect(0,0,w,h);
+  }
+
+  function loop(ts){
+    if(!m.running) return;
+    const dt = Math.min(.032, (ts - m.last)/1000);
+    m.last = ts;
+
+    // Campo Minado não precisa “update” contínuo, mas a gente redesenha
+    // por consistência e pra mostrar flags imediatamente.
+    draw();
+
+    m.raf = requestAnimationFrame(loop);
+  }
+
+  function handleLeftClick(px,py){
+    const c = cellFromCanvas(px,py);
+    if(!c) return;
+
+    if(!m.started){
+      placeMinesAvoid(c.x,c.y);
+    }
+
+    const cell = m.grid[idx(c.x,c.y)];
+    if(cell.flag || cell.rev) return;
+
+    // clicou numa mina
+    if(cell.mine){
+      cell.rev = true;
+      draw();
+      gameOver(false);
+      return;
+    }
+
+    revealCell(c.x,c.y);
+
+    if(checkWin()){
+      draw();
+      gameOver(true);
+    }
+  }
+
+  function handleRightClick(px,py){
+    const c = cellFromCanvas(px,py);
+    if(!c) return;
+
+    if(!m.started){
+      // permite marcar antes do primeiro clique, mas o primeiro clique ainda será seguro
+    }
+
+    toggleFlag(c.x,c.y);
+  }
+
+  games.mines = {
+    start(){
+      resizeCanvas();
+      m.active = true;
+
+      // reset state
+      m.cols = 0; m.rows = 0;
+      m.started = false;
+      m.over = false;
+      m.revealedSafe = 0;
+      m.score = 0;
+
+      layout();
+      makeEmptyGrid();
+
+      setHud(m.score, m.high, true);
+      hideOverlay();
+
+      draw();
+
+      m.running = true;
+      m.last = performance.now();
+      cancelAnimationFrame(m.raf);
+      m.raf = requestAnimationFrame(loop);
+    },
+
+    stop(){
+      m.active = false;
+      m.running = false;
+      cancelAnimationFrame(m.raf);
+    },
+
+    resize(){
+      resizeCanvas();
+      if(!m.active) return;
+
+      // mantém a partida, só recalcula layout e redesenha
+      layout();
+      draw();
+    },
+
+    // clique esquerdo
+    mouse(e){
+      if(!m.active || !m.running) return false;
+
+      const rect = canvas.getBoundingClientRect();
+
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      handleLeftClick(x,y);
+      return true;
+    },
+
+    // clique direito
+    right(e){
+      if(!m.active || !m.running) return false;
+
+      const rect = canvas.getBoundingClientRect();
+
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      handleRightClick(x,y);
+      return true;
+    },
+
+    restart(){
+      this.start();
+    }
+  };
+
+})();
+
+
+
+  // navegação
+  function showGame(key){
+    currentKey = key;
+    const meta = gameMeta[key];
+setGameTitle(meta.title);
+
+
+    menu.style.display = 'none';
+    screen.style.display = 'flex';
+    hero.style.display = 'flex';
+    stage.style.display = 'none';
+    hideOverlay();
+
+    gameName.textContent = meta.title;
+    subtitle.textContent = meta.sub;
+    controls.textContent = meta.controls;
+    startBtn.style.display = 'inline-block';
+
+    stopCurrent();
+
+    // jogos ainda não feitos: só “em breve”
+    if(!games[key]){
+      setHud(0,0,false);
+    } else {
+      setHud(0,0,true);
+    }
+  }
+
+function backToMenu(){
+  container.classList.remove('playing');
+  stopCurrent();
+  hideOverlay();
+
+  stage.style.display = 'none';   // <<< ESTA LINHA
+
+  screen.style.display = 'none';
+  menu.style.display = 'grid';
+
+  // restaura título + ícone padrão
+  setGameTitle('Jogos','🕹️');
+}
+
+
+
+  function startCurrent(){
+    container.classList.add('playing');
+
+    if(!games[currentKey]){
+      subtitle.textContent = 'EM BREVE';
+      startBtn.style.display = 'none';
+      return;
+    }
+
+    hero.style.display = 'none';
+    stage.style.display = 'block';
+    hideOverlay();
+
+    currentGame = games[currentKey];
+    currentGame.start();
+  }
+
+  // eventos
+  menu.querySelectorAll('.game-tile').forEach(function(tile){
+    tile.addEventListener('click', function(){
+      showGame(tile.dataset.game);
+    });
+  });
+
+  startBtn.addEventListener('click', startCurrent);
+  backBtn.addEventListener('click', backToMenu);
+  overlayBack.addEventListener('click', backToMenu);
+hudMenu.addEventListener('click', backToMenu);
+
+  overlayRestart.addEventListener('click', function(){
+    if(currentGame && currentGame.restart) currentGame.restart();
+    else startCurrent();
+  });
+
+  function onKeyDown(e){
+    if(stage.style.display !== 'block') return;
+    if(currentGame && currentGame.key){
+      const used = currentGame.key(e);
+      if(used) e.preventDefault();
+    }
+  }
+function onKeyUp(e){
+  if(stage.style.display !== 'block') return;
+  if(currentGame && currentGame.keyup){
+    const used = currentGame.keyup(e);
+    if(used) e.preventDefault();
+  }
+}
+window.addEventListener('keyup', onKeyUp);
+window.addEventListener('keydown', onKeyDown);
+
+
+// ---- mouse dispatcher (para jogos tipo Campo Minado) ----
+canvas.addEventListener('mousedown', e=>{
+
+  if(!currentGame) return;
+
+  if(e.button === 0 && currentGame.mouse){
+    currentGame.mouse(e);
+  }
+
+  if(e.button === 2 && currentGame.right){
+    currentGame.right(e);
+  }
+});
+
+canvas.addEventListener('contextmenu', e=>{
+
+  e.preventDefault();
+});
+
+  // resize reactivo
+  const ro = new ResizeObserver(function(){
+    if(stage.style.display === 'block' && currentGame && currentGame.resize){
+      currentGame.resize();
+    }
+  });
+  ro.observe(frame);
+
+  win._onLayoutChanged = function(){
+    if(stage.style.display === 'block' && currentGame && currentGame.resize){
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          currentGame.resize();
+        });
+      });
+    }
+  };
+
+  win._cleanup = function(){
+    try{ ro.disconnect(); }catch(e){}
+    window.removeEventListener('keydown', onKeyDown);
+window.removeEventListener('keyup', onKeyUp);
+
+    stopCurrent();
+  };
+}
+// Desktop icon
+
+  // Desktop icon
+  document.getElementById('arkadeIcon').addEventListener('click', openArkade);
+
+  // Start menu toggle (always-on-top)
+  const startBtnEl = document.getElementById('start-button');
+  const startMenu = document.getElementById('start-menu');
+
+  function openStartMenu(){
+    startMenu.style.display = 'block';
+    startMenu.style.zIndex = 30000;
+    requestAnimationFrame(()=> startMenu.classList.add('open'));
+  }
+
+  function closeStartMenu(){
+    startMenu.classList.remove('open');
+    setTimeout(()=>{ startMenu.style.display = 'none'; }, 250);
+  }
+
+  startBtnEl.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    if(startMenu.classList.contains('open')) closeStartMenu();
+    else openStartMenu();
+  });
+
+  document.addEventListener('click', (e)=>{
+    if(startMenu.classList.contains('open') && !startMenu.contains(e.target)) closeStartMenu();
+  });
+document.getElementById('start-notepad').addEventListener('click', ()=>{
+  closeStartMenu();
+  openNotepad();
+});
+document.getElementById('start-calc').addEventListener('click', ()=>{
+  closeStartMenu();
+  openCalculator();
+});
+document.getElementById('start-paint').addEventListener('click', ()=>{
+  closeStartMenu();
+  openPaint();
+});
+document.getElementById('start-music').addEventListener('click', ()=>{
+  closeStartMenu();
+  openMusic();
+});
+
+
+  document.getElementById('start-arkade').addEventListener('click', ()=>{
+    closeStartMenu();
+    openArkade();
+  });
+
+const helpBtn = [...document.querySelectorAll('.start-item')]
+  .find(el => el.textContent.trim() === 'Ajuda');
+if(helpBtn){
+  helpBtn.addEventListener('click', openHelp);
+}
+
+let helpWindow = null;
+
+function openHelp(){
+  closeStartMenu();
+
+  if(helpWindow){
+    helpWindow.classList.remove('minimized');
+    bringToFront(helpWindow);
+    return;
+  }
+
+  helpWindow = createWindow({
+    id: 'help',
+    title: 'Ajuda',
+    w: 420,
+    h: 260,
+    icon: '🆘',
+    build: (content)=>{
+    content.innerHTML = `
+<div style="
+  padding:24px;
+  font-size:28px;
+  line-height:1.7;
+  color:#eee;
+  white-space:pre-line;
+  text-align:center;
+">
+Bem vindo ao meu site!
+＜（＾－＾）＞
+
+Para navegar use seu mouse e saia clicando nas coisas pra ver o que acontece.
+
+Recomendo usar o site em tela cheia (só clicar o F11) para ter uma experiência mais imersiva, como se fosse um sistema operacional mesmo!
+
+Espero que goste!
+(～￣▽￣)～
+</div>
+`;
+    }
+  });
+toggleMaximize(helpWindow);
+
+  // ✅ AGORA SIM, só depois de existir
+  helpWindow.dataset.isHelp = '1';
+
+  helpWindow._onClose = () => {
+    helpWindow = null;
+  };
+}
+let notepadWindow = null;
+let paintWindow = null;
+let musicWindow = null;
+
+function openMusic(){
+  if(musicWindow){
+    musicWindow.classList.remove('minimized');
+    bringToFront(musicWindow);
+    return;
+  }
+
+  musicWindow = createWindow({
+    id:'music',
+    title:'Música',
+    w:460,
+    h:260,
+    icon:'🎵',
+    build:(content)=>{
+
+      content.innerHTML = `
+<div style="height:100%;display:flex;flex-direction:column;gap:10px;padding:12px">
+
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button class="cat" data-cat="random">Aleatório</button>
+    <button class="cat" data-cat="rock">Rock</button>
+    <button class="cat" data-cat="eurobeat">Eurobeat</button>
+    <button class="cat" data-cat="vocaloid">Vocaloide</button>
+  </div>
+
+  <div style="display:flex;gap:14px;justify-content:center">
+    <button id="prev">⏮</button>
+    <button id="play">▶️</button>
+    <button id="next">⏭</button>
+    <button id="shuffle">🔀</button>
+  </div>
+
+  <!-- IMPORTANTÍSSIMO: não use 0x0, deixa 1x1 -->
+  <div id="ytplayer" style="width:1px;height:1px;opacity:0;pointer-events:none;"></div>
+
+  <div id="music-warn" style="text-align:center;font-size:12px;opacity:.75;line-height:1.2"></div>
+</div>
+`;
+
+      const warn = content.querySelector('#music-warn');
+
+      // Aviso se estiver em file:// (onde o YT costuma travar)
+      if (location.protocol === 'file:') {
+        warn.innerHTML =
+          '⚠️ YouTube não costuma tocar em <b>file://</b>.<br>' +
+          'Abra em <b>http://localhost</b> (Live Server / python http.server).';
+      }
+
+      const playlists = {
+        random:"PLTlF2J-rd5VBUI6EMkALO2B7VfsKxpOxl",
+        rock:"PLTlF2J-rd5VDn4uPIPTwGcCtiRSGvDPH8",
+        eurobeat:"PLTlF2J-rd5VAhOO_2_vcEZ5UVG9HMiGkB",
+        vocaloid:"PLQErzTgKx_V2mh8OaJl73e9MoVAY2dEH8"
+      };
+
+      let currentCat = "random";
+      let player = null;
+      let ready = false;
+      let playing = false;
+
+      const playBtn = content.querySelector('#play');
+
+      // Loader robusto da IFrame API (não sobrescreve callback sem encadear)
+      function loadYouTubeAPI(){
+        if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+
+        if (window._ytApiPromise) return window._ytApiPromise;
+
+        window._ytApiPromise = new Promise((resolve) => {
+          const prev = window.onYouTubeIframeAPIReady;
+          window.onYouTubeIframeAPIReady = function(){
+            try{ if (typeof prev === 'function') prev(); }catch(_){}
+            resolve(window.YT);
+          };
+
+          // se script já existe, não duplica
+          const already = [...document.scripts].some(s => (s.src || '').includes('youtube.com/iframe_api'));
+          if (!already) {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
+          }
+        });
+
+        return window._ytApiPromise;
+      }
+
+      function ensurePlayer(){
+        if (player) return Promise.resolve(player);
+
+        return loadYouTubeAPI().then(() => {
+          return new Promise((resolve) => {
+            player = new YT.Player('ytplayer', {
+              height: '1',
+              width: '1',
+              videoId: 'M7lc1UVf-VE', // placeholder oficial do exemplo do YT (qualquer id funciona)
+              playerVars: {
+                controls: 0,
+                rel: 0,
+                modestbranding: 1,
+                playsinline: 1,
+                origin: location.origin // ajuda MUITO em http(s)
+              },
+              events: {
+                onReady: () => {
+                  ready = true;
+                  // agora sim: carrega playlist explicitamente
+                  player.loadPlaylist({
+                    listType: 'playlist',
+                    list: playlists[currentCat],
+                    index: 0
+                  });
+                  resolve(player);
+                },
+                onError: (e) => {
+                  // Mostra erro útil na UI (sem depender do console)
+                  warn.innerHTML = `❌ Erro YouTube (${e.data}).<br>` +
+                    `Se estiver em <b>file://</b>, use <b>http://localhost</b>.`;
+                }
+              }
+            });
+          });
+        });
+      }
+
+      function setPlayingUI(isPlaying){
+        playing = isPlaying;
+        playBtn.textContent = isPlaying ? "⏸" : "▶️";
+      }
+
+      // ===== Controles =====
+      playBtn.onclick = () => {
+        ensurePlayer().then(() => {
+          if (!ready) return;
+
+          // Se ainda não está tocando, tenta play.
+          // (Se o browser bloquear, ao menos já foi user gesture)
+          if (!playing) {
+            player.playVideo();
+            setPlayingUI(true);
+          } else {
+            player.pauseVideo();
+            setPlayingUI(false);
+          }
+        });
+      };
+
+      content.querySelector('#next').onclick = () => {
+        if (player) player.nextVideo();
+      };
+
+      content.querySelector('#prev').onclick = () => {
+        if (player) player.previousVideo();
+      };
+
+      content.querySelector('#shuffle').onclick = () => {
+        if (!player) return;
+        player.setShuffle(true);
+        player.playVideo();
+        setPlayingUI(true);
+      };
+
+      content.querySelectorAll('.cat').forEach(btn => {
+        btn.onclick = () => {
+          currentCat = btn.dataset.cat;
+
+          ensurePlayer().then(() => {
+            player.loadPlaylist({
+              listType: 'playlist',
+              list: playlists[currentCat],
+              index: 0
+            });
+            player.playVideo();
+            setPlayingUI(true);
+          });
+        };
+      });
+
+      // cleanup
+      musicWindow._cleanup = () => {
+        try{
+          if (player) player.destroy();
+        }catch(_){}
+        player = null;
+      };
+    }
+  });
+
+  musicWindow._onClose = () => {
+    musicWindow = null;
+  };
+}
+
+
+function openPaint(){
+
+  if(paintWindow){
+    paintWindow.classList.remove('minimized');
+    bringToFront(paintWindow);
+    return;
+  }
+
+  paintWindow = createWindow({
+    id:'paint',
+    title:'Paint',
+    w:720,
+    h:520,
+    icon:'🎨',
+    build:(content, win)=>{
+
+content.innerHTML = `
+<style>
+.paint-btn{
+  padding:6px 14px;
+  border-radius:8px;
+  border:none;
+  background:linear-gradient(180deg,#ff2a2a,#9b0000);
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,.4);
+  transition:.2s ease;
+}
+.paint-btn:hover{
+  transform:scale(1.08);
+  box-shadow:0 0 16px rgba(237,10,34,.7);
+}
+</style>
+
+<div style="height:100%;display:flex;flex-direction:column;gap:8px;">
+ <div style="display:flex;align-items:center;padding:0 10px;">
+
+  <!-- esquerda -->
+ <div style="display:flex;gap:10px;align-items:center;">
+  <input type="color" id="paint-color" value="#ff2a2a">
+  <input type="range" id="paint-size" min="2" max="30" value="6">
+
+  <button class="paint-btn" id="paint-eraser">Borracha</button>
+</div>
+
+
+  <!-- empurra tudo pra direita -->
+  <div style="flex:1"></div>
+
+  <!-- direita -->
+  <div style="display:flex;gap:10px;">
+    <button class="paint-btn" id="paint-clear">Limpar</button>
+    <button class="paint-btn" id="paint-save">Salvar</button>
+  </div>
+
+</div>
+
+
+  <div id="paint-frame" style="flex:1;display:flex;align-items:center;justify-content:center;">
+    <canvas id="paint-canvas" style="
+      width:100%;
+      height:100%;
+      max-width:1100px;
+      max-height:700px;
+      background:white;
+      border-radius:10px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+      display:block;
+      touch-action:none;
+    "></canvas>
+  </div>
+</div>
+`;
+
+      const canvas = content.querySelector('#paint-canvas');
+content.querySelector('#paint-frame').style.overflow = 'hidden';
+
+      const ctx = canvas.getContext('2d');
+
+
+      const color = content.querySelector('#paint-color');
+      const size  = content.querySelector('#paint-size');
+      const clear = content.querySelector('#paint-clear');
+      const save  = content.querySelector('#paint-save');
+const eraser = content.querySelector('#paint-eraser');
+
+let isEraser = false;
+
+eraser.onclick = ()=>{
+  isEraser = !isEraser;
+
+  if(isEraser){
+    eraser.textContent = 'Pincel';
+    eraser.style.boxShadow = '0 0 18px rgba(255,255,255,.6)';
+  }else{
+    eraser.textContent = 'Borracha';
+    eraser.style.boxShadow = '';
+  }
+};
+
+      let drawing = false;
+      let cssW = 0, cssH = 0;
+
+   let resizeRAF = 0;
+
+function resize(){
+
+  cancelAnimationFrame(resizeRAF);
+
+  resizeRAF = requestAnimationFrame(()=>{
+
+    const dpr = window.devicePixelRatio || 1;
+
+    // snapshot
+    let temp = null;
+    if(canvas.width && canvas.height){
+      temp = document.createElement('canvas');
+      temp.width = canvas.width;
+      temp.height = canvas.height;
+      temp.getContext('2d').drawImage(canvas,0,0);
+    }
+
+    const r = canvas.getBoundingClientRect();
+
+    cssW = Math.round(r.width);
+    cssH = Math.round(r.height);
+
+    if(cssW < 2 || cssH < 2) return;
+
+    canvas.width  = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    // fundo branco
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0,0,cssW,cssH);
+
+    if(temp){
+      ctx.drawImage(
+        temp,
+        0,0,temp.width,temp.height,
+        0,0,cssW,cssH
+      );
+    }
+
+  });
+}
+
+
+
+      function getPos(e){
+        const r = canvas.getBoundingClientRect();
+        return { x: e.clientX - r.left, y: e.clientY - r.top };
+      }
+
+      // estilo do traço
+      ctx.lineCap  = 'round';
+      ctx.lineJoin = 'round';
+
+      // ✅ usa Pointer Events (mais estável que mouse + window mouseup)
+      canvas.addEventListener('pointerdown', (e)=>{
+        drawing = true;
+        canvas.setPointerCapture(e.pointerId);
+
+        const p = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+      });
+
+      canvas.addEventListener('pointermove', (e)=>{
+        if(!drawing) return;
+
+        const p = getPos(e);
+       ctx.lineWidth = Number(size.value);
+
+if(isEraser){
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.strokeStyle = 'rgba(0,0,0,1)';
+}else{
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.strokeStyle = color.value;
+}
+
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      });
+
+      canvas.addEventListener('pointerup', (e)=>{
+        drawing = false;
+        try{ canvas.releasePointerCapture(e.pointerId); }catch(_){}
+      });
+
+      canvas.addEventListener('pointercancel', ()=>{
+        drawing = false;
+      });
+
+    clear.onclick = ()=>{
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,cssW,cssH);
+};
+
+
+      save.onclick = ()=>{
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = 'desenho.png';
+        a.click();
+      };
+
+      // resize da janela
+      resize();
+      win._onLayoutChanged = ()=>{
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(resize);
+  });
+};
+
+
+      // resize do browser (opcional)
+      window.addEventListener('resize', resize);
+
+      win._cleanup = ()=>{
+        window.removeEventListener('resize', resize);
+      };
+
+    }
+  });
+
+  paintWindow._onClose = ()=>{
+    paintWindow = null;
+  };
+}
+
+function openNotepad(){
+
+  if(notepadWindow){
+    notepadWindow.classList.remove('minimized');
+    bringToFront(notepadWindow);
+    return;
+  }
+
+  notepadWindow = createWindow({
+    id:'notepad',
+    title:'Bloco de notas',
+    w:520,
+    h:420,
+    icon:'📝',
+  build:(content)=>{
+
+  content.innerHTML = `
+    <div style="
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    ">
+
+      <textarea id="notepad-area" style="
+        flex:1;
+        resize:none;
+        background:#0b0b0b;
+        color:white;
+        border:1px solid rgba(255,255,255,.15);
+        border-radius:8px;
+        padding:12px;
+        font-family:Consolas, monospace;
+        font-size:14px;
+        outline:none;
+      " placeholder="Digite aqui..."></textarea>
+
+     <div style="
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 10px;
+">
+
+
+        <div id="notepad-counter" style="
+          font-size:12px;
+          opacity:.7;
+        ">
+          0 caracteres
+        </div>
+
+        <button id="notepad-save" style="
+          padding:8px 18px;
+          border-radius:10px;
+          border:none;
+          background:linear-gradient(180deg,#ff2a2a,#9b0000);
+          color:white;
+          font-weight:700;
+          cursor:pointer;
+          box-shadow:0 4px 12px rgba(0,0,0,.4);
+margin-bottom:10px;
+        ">
+          Salvar
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  const area = content.querySelector('#notepad-area');
+  const save = content.querySelector('#notepad-save');
+// animação hover / click
+save.style.transition = 'transform .12s ease, box-shadow .15s ease, filter .15s ease';
+
+// hover
+save.addEventListener('mouseenter', ()=>{
+  save.style.transform = 'scale(1.08)';
+  save.style.boxShadow = '0 0 14px rgba(237,10,34,.6)';
+});
+
+save.addEventListener('mouseleave', ()=>{
+  save.style.transform = 'scale(1)';
+  save.style.boxShadow = '0 4px 12px rgba(0,0,0,.4)';
+});
+
+// click feedback
+save.addEventListener('mousedown', ()=>{
+  save.style.transform = 'scale(.92)';
+  save.style.filter = 'brightness(.85)';
+});
+
+save.addEventListener('mouseup', ()=>{
+  save.style.transform = 'scale(1.05)';
+  save.style.filter = 'brightness(1)';
+});
+
+  const counter = content.querySelector('#notepad-counter');
+
+  function updateCounter(){
+    counter.textContent = area.value.length + ' caracteres';
+  }
+
+  area.addEventListener('input', updateCounter);
+
+  updateCounter();
+
+  save.addEventListener('click', ()=>{
+
+    const text = area.value;
+
+    const blob = new Blob([text], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nota.txt';
+    a.click();
+
+    URL.revokeObjectURL(url);
+// feedback visual de salvamento
+save.textContent = 'Salvo ✔';
+save.style.boxShadow = '0 0 20px rgba(0,255,120,.7)';
+save.style.background = 'linear-gradient(180deg,#2cff7a,#007a34)';
+
+setTimeout(()=>{
+  save.textContent = 'Salvar';
+  save.style.boxShadow = '0 4px 12px rgba(0,0,0,.4)';
+  save.style.background = 'linear-gradient(180deg,#ff2a2a,#9b0000)';
+}, 900);
+
+  });
+}
+
+  });
+
+  notepadWindow._onClose = ()=>{
+    notepadWindow = null;
+  };
+}
+function openCalculator(){
+
+  if(calcWindow){
+    calcWindow.classList.remove('minimized');
+    bringToFront(calcWindow);
+    return;
+  }
+
+  calcWindow = createWindow({
+    id:'calc',
+    title:'Calculadora',
+    w:300,
+    h:380,
+    icon:'🧮',
+    build:(content)=>{
+
+      content.innerHTML = `
+<div style="height:100%;display:flex;flex-direction:column;gap:10px">
+
+<input id="calcDisplay" readonly value="0" style="
+height:48px;
+border:none;
+border-radius:8px;
+background:#050505;
+color:white;
+font-size:22px;
+padding:0 10px;
+text-align:right;
+box-shadow:inset 0 0 6px rgba(0,0,0,.6);
+">
+
+<div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+
+${['7','8','9','/',
+'4','5','6','*',
+'1','2','3','-',
+'0','.','C','+'].map(b=>`
+<button class="calcBtn">${b}</button>
+`).join('')}
+
+<button class="calcBtn" style="grid-column:span 4;background:#600">=</button>
+
+
+</div>
+</div>
+`;
+
+      const display = content.querySelector('#calcDisplay');
+      let expr = '';
+
+      content.querySelectorAll('.calcBtn').forEach(btn=>{
+
+        btn.style.cssText += `
+border:none;
+border-radius:8px;
+background:linear-gradient(180deg,#aa0000,#440000);
+color:white;
+font-size:16px;
+cursor:pointer;
+box-shadow:0 4px 10px rgba(0,0,0,.5);
+transition:.12s;
+`;
+
+        btn.onmouseenter=()=>btn.style.transform='scale(1.06)';
+        btn.onmouseleave=()=>btn.style.transform='scale(1)';
+        btn.onmousedown=()=>btn.style.transform='scale(.92)';
+        btn.onmouseup=()=>btn.style.transform='scale(1.06)';
+
+        btn.onclick=()=>{
+
+          const v = btn.textContent;
+
+          if(v==='C'){
+            expr='';
+            display.value='0';
+            return;
+          }
+
+          if(v==='='){
+            try{
+              expr = eval(expr).toString();
+              display.value = expr;
+            }catch{
+              display.value='Erro';
+              expr='';
+            }
+            return;
+          }
+
+          expr += v;
+          display.value = expr;
+        };
+      });
+    }
+  });
+
+  calcWindow._onClose = ()=>{
+    calcWindow = null;
+  };
+}
+
+let aboutWindow = null;
+
+document.getElementById('start-about').addEventListener('click', openAbout);
+
+function openAbout(){
+  closeStartMenu();
+
+  if(aboutWindow){
+    aboutWindow.classList.remove('minimized');
+    bringToFront(aboutWindow);
+    return;
+  }
+
+  aboutWindow = createWindow({
+    id: 'about',
+    title: 'Sobre',
+    w: 520,
+    h: 420,
+    icon: 'ℹ️',
+    build: (content)=>{
+      content.innerHTML = `
+<style>
+.social-btn{
+  padding:10px 18px;
+  border-radius:12px;
+  background:linear-gradient(180deg,#ff2a2a,#9b0000);
+  color:white;
+  text-decoration:none;
+  font-weight:800;
+  letter-spacing:.5px;
+  box-shadow:0 6px 18px rgba(237,10,34,.45);
+  transition:.25s ease;
+}
+
+.social-btn:hover{
+  transform:translateY(-4px) scale(1.05);
+  box-shadow:0 12px 26px rgba(237,10,34,.8);
+}
+
+.social-btn:active{
+  transform:scale(.94);
+}
+</style>
+
+        <div style="
+          height:100%;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+          gap:14px;
+          text-align:center;
+          padding:20px;
+        ">
+
+          <img src="kgameajuda.png" style="width:160px;border-radius:12px;box-shadow:0 0 18px rgba(237,10,34,.4);">
+
+          <div style="font-size:22px;font-weight:900;">
+            Kgame_OS
+          </div>
+
+          <div style="opacity:.8;font-size:13px">
+            Versão 0.0.0.0.0.1
+          </div>
+
+         <div style="max-width:360px;font-size:14px;line-height:1.5;">
+  Sistema operacional sem bloatware para você navegar tranquilamente e aproveitar o conteúdo
+</div>
+
+<div style="
+  margin-top:6px;
+  font-size:13px;
+  opacity:.85;
+">
+  Créditos pela OS-tan:
+<a href="https://x.com/maumau_440" target="_blank"
+   style="color:#ed0a22;text-decoration:none;font-weight:700;">
+  @maumau_440
+</a>
+
+</div>
+
+
+      <div style="
+  display:flex;
+  gap:16px;
+  margin-top:6px;
+">
+
+  <a class="social-btn" href="https://www.youtube.com/@KGAMEAJUDA" target="_blank">YouTube</a>
+
+<a class="social-btn" href="https://www.instagram.com/k_game_ajuda/" target="_blank">Instagram</a>
+
+<a class="social-btn" href="https://www.tiktok.com/@k_game_ajuda" target="_blank">TikTok</a>
+
+</div>
+
+
+        </div>
+      `;
+    }
+  });
+
+  aboutWindow._onClose = ()=>{
+    aboutWindow = null;
+  };
+}
+
+
+const shutdownBtn = document.querySelector('.start-shutdown');
+const crt = document.getElementById('crt-off');
+const crtLine = document.getElementById('crt-line');
+
+if(shutdownBtn){
+  shutdownBtn.addEventListener('click', ()=>{
+
+    // ativa overlay
+    crt.classList.add('active');
+
+    // prepara linha CRT
+    crtLine.style.transition = 'all .35s ease';
+    crtLine.style.opacity = '1';
+
+    setTimeout(()=>{
+      crtLine.style.top = '50%';
+      crtLine.style.height = '100%';
+    },50);
+
+    // fecha depois do efeito
+    setTimeout(()=>{
+      window.open('', '_self');
+      window.close();
+    },700);
+
+  });
+}
+window.addEventListener('load', ()=>{
+
+  const hint = document.getElementById('f11-hint');
+  if(!hint) return;
+
+  setTimeout(()=>{
+    hint.classList.add('show');
+  },400);
+
+  setTimeout(()=>{
+    hint.classList.remove('show');
+  },3400);
+
+});
+const lock = document.getElementById('lock-screen');
+
+document.querySelector('.start-lock').addEventListener('click', ()=>{
+  closeStartMenu();
+  lock.classList.add('active');
+});
+
+// clicar na tela destrava
+lock.addEventListener('click', ()=>{
+  lock.classList.remove('active');
+});
+const clockEl = document.getElementById('task-clock');
+
+function updateClock(){
+  const d = new Date();
+
+  // hora 24h
+  const h = String(d.getHours()).padStart(2,'0');
+  const m = String(d.getMinutes()).padStart(2,'0');
+
+  // data BR
+  const day = String(d.getDate()).padStart(2,'0');
+  const mon = String(d.getMonth()+1).padStart(2,'0');
+  const year = d.getFullYear();
+
+  clockEl.innerHTML = `
+    <div>${h}:${m}</div>
+    <div style="font-size:11px;opacity:.8">${day}/${mon}/${year}</div>
+  `;
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
+const calendarEl = document.getElementById('task-calendar');
+
+function buildCalendar(){
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
+
+  const first = new Date(year, month, 1).getDay();
+  const days = new Date(year, month+1, 0).getDate();
+
+  const names = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  let html = `<div style="text-align:center;font-weight:700;letter-spacing:1px">
+    ${now.toLocaleString('pt-BR',{month:'long'})} ${year}
+  </div>`;
+
+  html += `<div class="calendar-grid">`;
+
+  names.forEach(d=>{
+    html += `<div class="calendar-day">${d}</div>`;
+  });
+
+  for(let i=0;i<first;i++) html += `<div></div>`;
+
+  for(let d=1; d<=days; d++){
+    html += `<div class="calendar-cell ${d===today?'calendar-today':''}">${d}</div>`;
+  }
+
+  html += `</div>`;
+
+  calendarEl.innerHTML = html;
+}
+clockEl.addEventListener('click', e=>{
+  e.stopPropagation();
+  buildCalendar();
+  calendarEl.classList.toggle('open');
+});
+document.addEventListener('click', e=>{
+  if(!calendarEl.contains(e.target) && !clockEl.contains(e.target)){
+    calendarEl.classList.remove('open');
+  }
+});
+
+</script>
+</body>
+</html>
